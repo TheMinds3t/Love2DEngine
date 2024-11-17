@@ -10,7 +10,7 @@ registry.init = function()
         if love.filesystem.getInfo(C_REG_FOLDER..file,"file") then 
             local reg_key = file:sub(1,(file:find(".",1,true) - 1 or file:len()))
             registry.active[reg_key] = GAME().core.filehelper.load_file(C_REG_FOLDER..file)
-            GAME().log("New register \'"..reg_key.."\' initialized!")    
+            GAME().log("New register \'"..reg_key.."\' initialized!", C_LOGGER_LEVELS.CORE)    
         end
     end
 end
@@ -22,17 +22,17 @@ registry.get_registry_object = function(reg_id, id)
         local data = reg.entries[id]
         if data then 
             if reg.clone_on_create == true then 
-                GAME().log("Created clone of entry \'"..id.."\' from register \'"..reg_id.."\'")
+                GAME().log("Created clone of entry \'"..id.."\' from register \'"..reg_id.."\'", C_LOGGER_LEVELS.DEBUG)
                 return GAME().core.util.deep_copy(data)
             else
-                GAME().log("Retrieved entry \'"..id.."\' from register \'"..reg_id.."\'")
+                GAME().log("Retrieved entry \'"..id.."\' from register \'"..reg_id.."\'", C_LOGGER_LEVELS.DEBUG)
                 return data
             end
         else 
-            GAME().log("Unable to construct entry \'"..id.."\' from register \'"..reg_id.."\'")
+            GAME().log("Unable to construct entry \'"..id.."\' from register \'"..reg_id.."\'", C_LOGGER_LEVELS.CORE)
         end
     else 
-        GAME().log("Unknown register \'"..reg_id.."\'")
+        GAME().log("Unknown register \'"..reg_id.."\'", C_LOGGER_LEVELS.CORE)
     end
 end
 

@@ -21,8 +21,8 @@ function GAME()
 end
 
 -- shortcut
-main.log = function(msg)
-    return main.core.logger.log(msg)
+main.log = function(msg, level)
+    return main.core.logger.log(msg, level)
 end
 
 function love.load(args)
@@ -47,16 +47,26 @@ function love.update(dt)
 
     if cur_dt >= frame_delta then 
         -- tick!
-        cur_dt = cur_dt - frame_delta
+
         main.core.threads.update()
 
-        if main.core.threads.is_blocked() then 
-            -- load screen logic
+        if cur_dt < frame_delta * 2 then 
+            if main.core.threads.is_blocked() then 
+                -- load screen logic
+            else 
+                -- logic update
+                if main.core.world.is_active() then 
+                    main.core.world.update(dt)
+                end
+            end    
+
+            cur_dt = cur_dt - frame_delta
         else 
-            -- logic update
-            if main.core.world.is_active() then 
-                main.core.world.update(dt)
-            end
+            GAME().log("skip detected.. cur_dt="..cur_dt, C_LOGGER_LEVELS.DEBUG)
+            
+            while cur_dt >= frame_delta do 
+                cur_dt = cur_dt - frame_delta
+            end    
         end
     end
 end
