@@ -11,11 +11,11 @@ world.contact_start = function(a, b, coll)
     local a_dt, b_dt = a:getUserData(), b:getUserData()
 
     if a_dt and a_dt.on_collide then 
-        a_dt.on_collide(a_dt, b_dt, a:getBody(), b:getBody(), x, y)
+        a_dt.on_collide(a_dt, b_dt, a:getBody(), b:getBody(), x, y, coll)
     end
 
     if b_dt and b_dt.on_collide then 
-        b_dt.on_collide(b_dt, a_dt, b:getBody(), a:getBody(), x, y)
+        b_dt.on_collide(b_dt, a_dt, b:getBody(), a:getBody(), x, y, coll)
     end
 end
 
@@ -39,18 +39,18 @@ world.get_world = function()
     return world.cur_world 
 end
 
-world.base_object_update = function(dt, body)
-    dt.ticks = (dt.ticks or 0) + 1
+world.base_object_update = function(data, dt, body)
+    data.ticks = (data.ticks or 0) + dt
 end
 
 world.update = function(dt)
     if world.is_active() then 
         for _,body in ipairs(world.cur_world:getBodies()) do 
-            local dt = body:getUserData() 
+            local data = body:getUserData() 
 
-            if dt and dt.update then 
-                world.base_object_update(dt, body)
-                dt:update(body)
+            if data and data.update then 
+                world.base_object_update(data, dt * C_WORLD_UPDATE_SCALAR, body)
+                data:update(dt * C_WORLD_UPDATE_SCALAR, body)
             end
         end
 

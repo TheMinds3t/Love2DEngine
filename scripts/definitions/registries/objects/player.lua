@@ -6,14 +6,15 @@ local player = {
         self.phys.body:setMass(1)
         self.phys.body:setFixedRotation(true)
     end,
-    max_jump_time = 8,
-    update = function(self, body)
+    max_jump_time = C_PLAYER_MAX_JUMP_TIME,
+    update = function(self, dt, body)
         x, y = body:getLinearVelocity( )
         local targx = 0
+        local sprint_flag = GAME().core.input.is_input_active(C_INPUT_IDS.SPRINT)
 
         if GAME().core.input.is_input_active(C_INPUT_IDS.LEFT) then 
             if GAME().core.input.is_input_active(C_INPUT_IDS.LEFT,true) then 
-                body:applyLinearImpulse(-C_PLAYER_HORI_MOVE_SPEED*C_PLAYER_HORI_MOVE_START_SCALAR,0)
+                body:applyLinearImpulse(-C_PLAYER_HORI_MOVE_SPEED*C_PLAYER_HORI_MOVE_START_SCALAR*(sprint_flag and 1.0 or C_PLAYER_WALK_SCALAR),0)
             end
 
             targx = targx - C_PLAYER_HORI_MOVE_SPEED
@@ -21,7 +22,7 @@ local player = {
 
         if GAME().core.input.is_input_active(C_INPUT_IDS.RIGHT) then 
             if GAME().core.input.is_input_active(C_INPUT_IDS.RIGHT,true) then 
-                body:applyLinearImpulse(C_PLAYER_HORI_MOVE_SPEED*C_PLAYER_HORI_MOVE_START_SCALAR,0)
+                body:applyLinearImpulse(C_PLAYER_HORI_MOVE_SPEED*C_PLAYER_HORI_MOVE_START_SCALAR*(sprint_flag and 1.0 or C_PLAYER_WALK_SCALAR),0)
             end
 
             targx = targx + C_PLAYER_HORI_MOVE_SPEED
@@ -30,11 +31,12 @@ local player = {
         if GAME().core.input.is_input_active(C_INPUT_IDS.JUMP) then
             if (self.airborne or false) == false then 
                 body:applyLinearImpulse(0,-C_PLAYER_JUMP_STRENGTH)                        
+                self.active_jump = true 
             end
 
-            self.jump_time = math.min((self.jump_time or 0) + 1, self.max_jump_time)
+            self.jump_time = math.min((self.jump_time or 0) + dt, self.max_jump_time)
 
-            if self.jump_time < self.max_jump_time then 
+            if self.jump_time < self.max_jump_time and self.active_jump == true then 
                 body:applyLinearImpulse(0,-C_PLAYER_JUMP_HOLD_STRENGTH)
             end
 
@@ -42,9 +44,18 @@ local player = {
             self.grounded = false
         elseif self.grounded == true then 
             self.jump_time = 0
+            self.active_jump = false 
         end
 
-        local correct_x_vel = C_PLAYER_HORI_MAX_MOVE_SPEED - math.abs(x)
+        if GAME().core.input.is_input_active(C_INPUT_IDS.RIGHT) then 
+            if GAME().core.input.is_input_active(C_INPUT_IDS.RIGHT,true) then 
+                body:applyLinearImpulse(C_PLAYER_HORI_MOVE_SPEED*C_PLAYER_HORI_MOVE_START_SCALAR*(sprint_flag and 1.0 or C_PLAYER_WALK_SCALAR),0)
+            end
+
+            targx = targx + C_PLAYER_HORI_MOVE_SPEED
+        end
+
+        local correct_x_vel = C_PLAYER_HORI_MAX_MOVE_SPEED*(sprint_flag and 1.0 or C_PLAYER_WALK_SCALAR) - math.abs(x)
 
         if correct_x_vel < 0 then 
             targx = targx - (x < 0 and correct_x_vel or -correct_x_vel)
@@ -61,7 +72,7 @@ local player = {
         end
 
         if GAME().core.input.is_input_active(C_INPUT_IDS.DOWN) then 
-            body:applyForce(0,200)
+            body:applyForce(0,C_PLAYER_DOWN_STRENGTH)
         end
 
         if body:getY() > 625 then 
@@ -87,8 +98,8 @@ local player = {
         love.graphics.rectangle("line", -25, -25, 50, 50)
         love.graphics.pop()
     end,
-    on_collide = function(self, b_data, a, b, x, y)
-        if y == 1 then -- bottom face collided
+    on_collide = function(self, b_data, a, b, x, y, coll)
+        if y > 0 then -- bottom face collided
             self.airborne = false 
             self.grounded = true 
             self.jump_time = 0    

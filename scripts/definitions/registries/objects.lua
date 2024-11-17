@@ -23,8 +23,8 @@ return {
                 self.phys = GAME().core.physics.new_rectangle(self,x,y,200,50,C_PHYSICS_BODY_TYPES.STATIC)
                 self.phys.body:setGravityScale(0)
             end,
-            update = function(self, body)
-                body:setAngle(math.cos(math.rad(self.ticks or 0)))
+            update = function(self, dt, body)
+                body:setAngle(math.cos(self.ticks or 0))
             end,
             render = function(self, body) 
                 love.graphics.push()

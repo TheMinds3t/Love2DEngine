@@ -15,7 +15,13 @@ return {
             scancode = "s"
         },
         JUMP = {
-            scancode = "space"
-        }
+            scancode = "space",
+        },
+        SPRINT = {
+            scancode = "lshift"
+        },
+        SHOOT = {
+            mouse_button = 1
+        },
     }
 }
