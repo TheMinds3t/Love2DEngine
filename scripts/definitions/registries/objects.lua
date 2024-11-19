@@ -5,8 +5,10 @@ return {
     entries = {
         TEST = GAME().core.filehelper.load_file("scripts/definitions/registries/objects/player.lua"),
         BLOCK = {
-            init = function(self,x,y)
-                self.phys = GAME().core.physics.new_rectangle(self,x,y,200,50,C_PHYSICS_BODY_TYPES.STATIC)
+            init = function(self,x,y,params)
+                self.width = params.width or 200
+                self.height = params.height or 50
+                self.phys = GAME().core.physics.new_rectangle(self,x,y,self.width,self.height,C_PHYSICS_BODY_TYPES.STATIC)
             end,
             render = function(self, body) 
                 love.graphics.push()
@@ -14,17 +16,18 @@ return {
                 love.graphics.setColor(255,0,0,255)
                 love.graphics.translate(x,y)
                 love.graphics.rotate(body:getAngle())
-                love.graphics.rectangle("fill", -100, -25, 200, 50)
+                love.graphics.rectangle("fill", -self.width / 2, -self.height / 2, self.width, self.height)
                 love.graphics.pop()
             end,
         },
         ROTATING_BLOCK = {
-            init = function(self,x,y)
-                self.phys = GAME().core.physics.new_rectangle(self,x,y,200,50,C_PHYSICS_BODY_TYPES.STATIC)
-                self.phys.body:setGravityScale(0)
+            init = function(self,x,y,params)
+                self.width = params.width or 200
+                self.height = params.height or 50
+                self.phys = GAME().core.physics.new_rectangle(self,x,y,self.width,self.height,C_PHYSICS_BODY_TYPES.STATIC)
             end,
             update = function(self, dt, body)
-                body:setAngle(math.cos(self.time or 0))
+                body:setAngle(math.cos(self.time or 0)/ 16.0)
             end,
             render = function(self, body) 
                 love.graphics.push()
@@ -32,7 +35,7 @@ return {
                 love.graphics.setColor(255,0,0,255)
                 love.graphics.translate(x,y)
                 love.graphics.rotate(body:getAngle())
-                love.graphics.rectangle("fill", -100, -25, 200, 50)
+                love.graphics.rectangle("fill", -self.width / 2, -self.height / 2, self.width, self.height)
                 love.graphics.pop()
             end,
         },

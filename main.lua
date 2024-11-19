@@ -30,6 +30,7 @@ function love.load(args)
     main.core.registry.init()
     main.core.physics.init()
     main.core.input.init()
+    main.core.render.init()
     -- main.core.filehelper.load_file("tests/file_io_test.lua")
     main.core.filehelper.load_file("tests/physics_test.lua")
     -- main.core.filehelper.load_file("tests/threads_test.lua")
@@ -40,34 +41,21 @@ function love.quit()
 end
 
 local cur_dt = 0.0
-local frame_delta = 1.0 / C_LOGIC_FRAME_RATE
+local frame_delta = 1.0 / C_TICKS_PER_SECOND
 
 function love.update(dt)
-    cur_dt = cur_dt + dt 
+    main.core.threads.update()
 
-    if cur_dt >= frame_delta then 
-        -- tick!
-
-        main.core.threads.update()
-
-        if cur_dt < frame_delta * 2 then 
-            if main.core.threads.is_blocked() then 
-                -- load screen logic
-            else 
-                -- logic update
-                if main.core.world.is_active() then 
-                    main.core.world.update(dt)
-                end
-            end    
-
-            cur_dt = cur_dt - frame_delta
+    -- if cur_dt < frame_delta * 2 then 
+    if dt < frame_delta then
+        if main.core.threads.is_blocked() then 
+            -- load screen logic
         else 
-            GAME().log("skip detected.. cur_dt="..cur_dt, C_LOGGER_LEVELS.DEBUG)
-            
-            while cur_dt >= frame_delta do 
-                cur_dt = cur_dt - frame_delta
-            end    
-        end
+            -- logic update
+            if main.core.world.is_active() then 
+                main.core.world.update(dt)
+            end
+        end    
     end
 end
 

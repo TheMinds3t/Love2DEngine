@@ -37,6 +37,12 @@ end
 function love.keypressed(key, scancode, isrepeat)
     if input.cur_scheme ~= nil then 
         local control = input.cur_scheme.key_map[scancode]
+
+        if key == "v" then 
+            GAME().vsync_test = not GAME().vsync_test
+            love.window.setVSync((love.window.getVSync() + 1) % 2)
+        end 
+
         if control then 
             input.active_keys = input.active_keys or {}
             input.active_keys[control] = 2

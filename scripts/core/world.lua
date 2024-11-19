@@ -60,8 +60,9 @@ world.get_world = function()
 end
 
 world.base_object_update = function(data, dt, body)
-    data.ticks = (data.ticks or 0) + 1
     data.time = (data.time or 0) + dt
+    data.ticks = math.floor(data.time * C_TICKS_PER_SECOND)
+
     if data.update then 
         data:update(dt * C_WORLD_UPDATE_SCALAR, body)    
     end

@@ -37,8 +37,7 @@ end
 -- end
 
 -- this is all that is needed to create a new entity in the world
-physics.create_holder_from = function(entry,x,y,init)
-    init = init == nil and true or init
+physics.create_holder_from = function(entry,x,y,params)
     local new_obj = GAME().core.registry.get_registry_object(C_REG_TYPES.OBJECT, entry)
     new_obj.id = entry 
     new_obj.contact_type = new_obj.contact_type == nil and C_WORLD_CONTACT_TYPES.ALL or new_obj.contact_type
@@ -51,9 +50,7 @@ physics.create_holder_from = function(entry,x,y,init)
         end    
     end
 
-    if init then 
-        new_obj:init(x,y)
-    end
+    new_obj:init(x,y,params or {})
 
     return new_obj
 end
