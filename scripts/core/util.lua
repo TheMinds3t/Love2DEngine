@@ -25,17 +25,12 @@ util.deep_copy = function(obj, seen)
 end
 -- 27.3 (56 / 205)
 util.interpolate_color = function(cola, colb, perc)
-    local ar, ag, ab, aa = love.math.colorToBytes(cola.r, cola.g, cola.b, cola.a)
-    local br, bg, bb, ba = love.math.colorToBytes(colb.r, colb.g, colb.b, colb.a)
-
-    aa = aa == nil and 255 or aa 
-    ba = ba == nil and 255 or ba 
-
-    return love.math.colorFromBytes(
-        math.max(0,math.min(255,ar * (1.0 - perc) + br * perc)),
-        math.max(0,math.min(255,ag * (1.0 - perc) + bg * perc)),
-        math.max(0,math.min(255,ab * (1.0 - perc) + bb * perc)),
-        math.max(0,math.min(255,aa * (1.0 - perc) + ba * perc)))
+    return {
+        r=math.max(0,math.min(255,cola.r * (1.0 - perc) + colb.r * perc)),
+        g=math.max(0,math.min(255,cola.g * (1.0 - perc) + colb.g * perc)),
+        b=math.max(0,math.min(255,cola.b * (1.0 - perc) + colb.b * perc)),
+        a=math.max(0,math.min(255,cola.a * (1.0 - perc) + colb.a * perc))
+    }
 end
 
 util.interpolate_transform = function(transa, transb, perc)
@@ -51,6 +46,24 @@ util.interpolate_transform = function(transa, transb, perc)
         aoy * (1.0 - perc) + boy * perc,
         ashx * (1.0 - perc) + bshx * perc,
         ashy * (1.0 - perc) + bshy * perc)
+end
+
+util.round = function(num, sig_figs)
+    return math.floor(num*10^sig_figs) / 10 ^ (sig_figs - 2)
+end
+
+util.split_dict = function(dict, flip_result)
+    flip_result = flip_result == nil and false or flip_result
+    local keyset = {}
+    local valset = {}
+
+    for key,val in pairs(dict) do 
+        insert(keyset, key)
+        insert(valset, val)
+    end
+
+    if flip_result then return valset, keyset else 
+    return keyset, valset end
 end
 
 return util

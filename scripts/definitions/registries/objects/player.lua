@@ -14,23 +14,12 @@ local player = {
         GAME().core.render.update_sprite(self.sprite, self, dt)
 
         local targx = 0
-        local sprint_flag = GAME().core.input.is_input_active(C_INPUT_IDS.SPRINT)
-        local hori_move_scalar = (sprint_flag == true and 1.0 or C_PLAYER_WALK_SCALAR) * move_scale
-        local initial_move_frame = false
 
         if GAME().core.input.is_input_active(C_INPUT_IDS.LEFT) then 
-            if GAME().core.input.is_input_active(C_INPUT_IDS.LEFT,true) then 
-                initial_move_frame = true 
-            end
-
             targx = targx - C_PLAYER_HORI_MOVE_SPEED
         end
 
         if GAME().core.input.is_input_active(C_INPUT_IDS.RIGHT) then 
-            if GAME().core.input.is_input_active(C_INPUT_IDS.RIGHT,true) then 
-                initial_move_frame = true 
-            end
-
             targx = targx + C_PLAYER_HORI_MOVE_SPEED
         end
 
@@ -55,6 +44,8 @@ local player = {
             self.active_jump = false 
         end
 
+        local hori_move_scalar = (GAME().core.input.is_input_active(C_INPUT_IDS.SPRINT) == true and 1.0 or C_PLAYER_WALK_SCALAR) * move_scale
+
         local xvel, yvel = body:getLinearVelocity()
 
         if math.abs(xvel) > C_PLAYER_HORI_MOVE_SPEED*hori_move_scalar*C_WORLD_METER_SCALE then 
@@ -64,15 +55,14 @@ local player = {
             local newvelx, newvely = body:getLinearVelocity()
         end
 
-        -- local correct_x_vel = C_PLAYER_HORI_MAX_MOVE_SPEED*(sprint_flag and 1.0 or C_PLAYER_WALK_SCALAR)*move_scale - math.abs(x)
-
-        -- if correct_x_vel < 0 then 
-        --     targx = targx - (x < 0 and correct_x_vel or -correct_x_vel)
-        -- end
-
-        if initial_move_frame == true then 
-            body:applyLinearImpulse(targx*hori_move_scalar,0)
-            body:applyLinearImpulse(targx*hori_move_scalar,0)
+        if targx == 0 then 
+            self.initial_move_frame = true
+        else 
+            if self.initial_move_frame == true then 
+                body:applyLinearImpulse(targx*hori_move_scalar,0)
+                body:applyLinearImpulse(targx*hori_move_scalar,0)
+                self.initial_move_frame = false 
+            end    
         end
 
         body:applyLinearImpulse(targx*hori_move_scalar*dt,0)
@@ -85,7 +75,6 @@ local player = {
         if not (targx > 0 and xvel > 0 or targx < 0 and xvel < 0) then 
             body:applyLinearImpulse(-xvel,0)
         end
-
 
         if GAME().core.input.is_input_active(C_INPUT_IDS.DOWN) then 
             body:applyForce(0,C_PLAYER_DOWN_STRENGTH*move_scale)
@@ -116,7 +105,7 @@ local player = {
         love.graphics.rectangle("line", -25, -25, 50, 50)
         love.graphics.pop()
         love.graphics.translate(5,5)
-        GAME().core.render.draw_sprite(self.sprite)
+        GAME().core.render.draw_sprite(self.sprite,0,{color_mult={r=0,g=255,b=100,a=math.cos(GAME().time) * 100 + 150}})
         love.graphics.translate(-5,-5)
 
     end,

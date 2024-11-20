@@ -50,9 +50,26 @@ physics.create_holder_from = function(entry,x,y,params)
         end    
     end
 
+    new_obj.util = physics.util
+
     new_obj:init(x,y,params or {})
 
     return new_obj
 end
+
+physics.util = {
+    is_tick = function(self, tick, off)
+        off = off == nil and 0 or off 
+
+        if (self.ticks + off) % tick == 0 and (self.last_tick_state or 0) ~= true then
+            self.last_tick_state = true  
+            return true
+        else 
+            self.last_tick_state = false
+        end
+
+        return false 
+    end
+}
 
 return physics

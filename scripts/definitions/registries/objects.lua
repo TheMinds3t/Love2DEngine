@@ -78,7 +78,7 @@ return {
                 self.phys = GAME().core.physics.new_rectangle(self,x,y,25,25,C_PHYSICS_BODY_TYPES.STATIC)
             end,
             update = function(self, dt, body) 
-                if self.ticks % 10 == 0 then 
+                if self.util.is_tick(self, 10) then 
                     GAME().core.physics.create_holder_from("RAINDROP",body:getX(),body:getY())
                 end
 

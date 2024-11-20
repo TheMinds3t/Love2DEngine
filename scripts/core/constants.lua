@@ -1,5 +1,6 @@
 -- how many ticks should elapse in 1 second
 C_TICKS_PER_SECOND = 60.0
+C_MAX_DELTA_ALLOWED = 1 / C_TICKS_PER_SECOND * 5
 
 C_GAMENAME = "demonical"
 
@@ -28,7 +29,8 @@ C_RENDER_INTERPOLATE_TYPE = {
 -- scale factor for all rendered sprites
 C_RENDER_ROOT_SPRITE_SCALE = 2
 -- default color when color is unspecified
-C_COLOR_DEFAULT = {r=255,g=255,b=255,a=255}
+C_COLOR_WHITE = {r=255,g=255,b=255,a=255}
+C_COLOR_EMPTY = {r=0,g=0,b=0,a=0}
 
 -- love.threads channel identifiers
 C_THREADS_BLOCKING_CHANNEL = "blocking"
@@ -38,6 +40,17 @@ C_PHYSICS_BODY_TYPES = {
     STATIC="static", --do not move
     DYNAMIC="dynamic", --collides with all bodies 
     KINEMATIC="kinematic" --collide with dynamics only
+}
+
+C_RENDER_BLEND_MODES = {
+    ALPHA="alpha",
+    REPLACE="replace",
+    SCREEN="screen",
+    ADD="add",
+    -- SUBTRACT="subtract",
+    -- MULTIPLY="multiply",
+    -- LIGHTEN="lighten",
+    -- DARKEN="darken"
 }
 
 -- how many pixels in a meter
