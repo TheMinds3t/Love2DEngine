@@ -33,8 +33,8 @@ cam.init = function()
             local mouse_pos = cam.get_position_in_cam(GAME().input.mouse_x or 0, GAME().input.mouse_y or 0, true)
             GAME().log(mouse_pos.x..","..mouse_pos.y)
 
-            local targ_x = cam.cur_cam.params.target.x + ((mouse_pos.x or C_WINDOW_DIMENSIONS.WIDTH / 2.0) - C_WINDOW_DIMENSIONS.WIDTH / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR / C_RENDER_ROOT_SPRITE_SCALE
-            local targ_y = cam.cur_cam.params.target.y + ((mouse_pos.y or C_WINDOW_DIMENSIONS.HEIGHT / 2.0) - C_WINDOW_DIMENSIONS.HEIGHT / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR / C_RENDER_ROOT_SPRITE_SCALE
+            local targ_x = cam.cur_cam.params.target.x + ((mouse_pos.x or C_WINDOW_DIMENSIONS.WIDTH / 2.0) - C_WINDOW_DIMENSIONS.WIDTH / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR
+            local targ_y = cam.cur_cam.params.target.y + ((mouse_pos.y or C_WINDOW_DIMENSIONS.HEIGHT / 2.0) - C_WINDOW_DIMENSIONS.HEIGHT / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR
             cam.follow(cam.cur_cam,dt,targ_x,targ_y)
         end
     end    
