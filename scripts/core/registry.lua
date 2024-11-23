@@ -9,7 +9,7 @@ registry.init = function()
     for _,file in ipairs(files) do 
         if love.filesystem.getInfo(C_REG_FOLDER..file,"file") then 
             local reg_key = file:sub(1,(file:find(".",1,true) - 1 or file:len()))
-            registry.active[reg_key] = GAME().core.filehelper.load_file(C_REG_FOLDER..file)
+            registry.active[reg_key] = GAME().filehelper.load_file(C_REG_FOLDER..file)
             GAME().log("New register \'"..reg_key.."\' initialized!", C_LOGGER_LEVELS.CORE)    
         end
     end
@@ -23,7 +23,7 @@ registry.get_registry_object = function(reg_id, id)
         if data then 
             if reg.clone_on_create == true then 
                 GAME().log("Created clone of entry \'"..id.."\' from register \'"..reg_id.."\'", C_LOGGER_LEVELS.DEBUG)
-                return GAME().core.util.deep_copy(data)
+                return GAME().util.deep_copy(data)
             else
                 GAME().log("Retrieved entry \'"..id.."\' from register \'"..reg_id.."\'", C_LOGGER_LEVELS.DEBUG)
                 return data
@@ -49,7 +49,7 @@ registry.get_keys_for = function(reg_id)
 
         return ret
     else 
-        GAME().log("Unknown register \'"..reg_id.."\'")
+        GAME().log("Unknown register \'"..reg_id.."\'", C_LOGGER_LEVELS.ERROR)
     end
 end
 

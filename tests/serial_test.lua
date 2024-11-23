@@ -9,7 +9,7 @@ local serials = {
 GAME().log("unserialized: "..tostring(serials))
 
 for _,serial in pairs(serials) do 
-    local serialized = GAME().core.filehelper.serialize(serial)
+    local serialized = GAME().filehelper.serialize(serial)
     GAME().log(serialized)
 
     GAME().log("next serial..")
@@ -17,14 +17,14 @@ end
 
 GAME().log("\nfinal serial (all):")
 
-local serialized = GAME().core.filehelper.serialize(serials)
+local serialized = GAME().filehelper.serialize(serials)
 GAME().log(serialized)
 
 GAME().log("\n deserialized")
 
-local deserialized = GAME().core.filehelper.deserialize(serialized)
+local deserialized = GAME().filehelper.deserialize(serialized)
 
-GAME().log("\n\nRESERIALIZED:"..GAME().core.filehelper.serialize(deserialized))
+GAME().log("\n\nRESERIALIZED:"..GAME().filehelper.serialize(deserialized))
 -- for k,v in pairs(deserialized) do 
 --     GAME().log(k.."="..v)
 -- end

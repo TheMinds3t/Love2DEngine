@@ -66,4 +66,14 @@ util.split_dict = function(dict, flip_result)
     return keyset, valset end
 end
 
+util.get_angle_towards = function(x1,y1,x2,y2)
+    return math.atan2(x1-x2,y1-y2)
+end
+
+util.get_distance = function(x1,y1,x2,y2)
+    local x = x2 - x1 
+    local y = y2 - y1
+    return math.sqrt(y^2 + x^2)
+end
+
 return util

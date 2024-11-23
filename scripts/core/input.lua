@@ -8,10 +8,10 @@ end
 input.create_input_set = function(input_data)
     input.cur_scheme = {refs = {}, key_map = {}, mouse_map = {}, config_keys = {}}
     
-    local keys = (input_data ~= nil and input_data or GAME().core.registry.get_keys_for(C_REG_TYPES.INPUT))
+    local keys = (input_data ~= nil and input_data or GAME().registry.get_keys_for(C_REG_TYPES.INPUT))
 
     for _,key in ipairs(keys) do 
-        local obj = GAME().core.registry.get_registry_object(C_REG_TYPES.INPUT,key)
+        local obj = GAME().registry.get_registry_object(C_REG_TYPES.INPUT,key)
         input.cur_scheme.refs[key] = obj
 
         if obj.scancode then 
@@ -25,13 +25,13 @@ input.create_input_set = function(input_data)
 end
 
 input.export_input_scheme = function(file)
-    GAME().core.filehelper.write_file(C_INPUT_SCHEME_FOLDER..file,function() 
-        return {GAME().core.filehelper.serialize(input.cur_scheme)}
+    GAME().filehelper.write_file(C_INPUT_SCHEME_FOLDER..file,function() 
+        return {GAME().filehelper.serialize(input.cur_scheme)}
     end)
 end
 
 input.import_input_scheme = function(file)
-    input.create_input_set(GAME().core.filehelper.deserialize(GAME().core.filehelper.read_file(C_INPUT_SCHEME_FOLDER..file)[1]))
+    input.create_input_set(GAME().filehelper.deserialize(GAME().filehelper.read_file(C_INPUT_SCHEME_FOLDER..file)[1]))
 end
 
 function love.keypressed(key, scancode, isrepeat)
@@ -42,6 +42,10 @@ function love.keypressed(key, scancode, isrepeat)
             GAME().vsync_test = not GAME().vsync_test
             love.window.setVSync((love.window.getVSync() + 1) % 2)
         end 
+
+        if key == "b" then 
+            GAME().ui.add_dialogue("this is me testing dialogue, should be cool! Makes you wonder how much text you can really fit in this box, honestly I have no idea. Looks to be about 4 lines worth, or this long.")
+        end
 
         if control then 
             input.active_keys = input.active_keys or {}

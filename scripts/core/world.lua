@@ -1,13 +1,24 @@
 require("scripts.core.constants")
 local world = {}
 
+world.players = {}
+
+world.add_player = function(player_obj)
+    if world.cur_world ~= nil and player_obj.world_seed ~= world.world_seed then 
+        table.insert(world.players, player_obj)
+        player_obj.world_seed = world.world_seed
+    end
+end
+
 world.start_world = function()
     if world.cur_world ~= nil then 
         world.cur_world:destroy()
     end
-    world.cur_world = love.physics.newWorld(C_WORLD_GRAVITY.X, C_WORLD_GRAVITY.Y, true)
+    world.players = {}
+    world.cur_world = love.physics.newWorld(C_WORLD_GRAVITY.X * C_WORLD_METER_SCALE, C_WORLD_GRAVITY.Y * C_WORLD_METER_SCALE, true)
     world.cur_world:setCallbacks(world.contact_start, world.contact_end, world.pre_solve_contact, world.post_solve_contact)
     world.cur_world:setContactFilter(world.contact_filter)
+    world.world_seed = love.timer.getTime()
 end
 
 world.contact_filter = function(a, b)
@@ -67,6 +78,12 @@ world.base_object_update = function(data, dt, body)
         data:update(dt * C_WORLD_UPDATE_SCALAR, body)    
     end
 
+    if body:getType() ~= C_PHYSICS_BODY_TYPES.STATIC then 
+        body:applyForce(C_WORLD_GRAVITY.X * C_ADDITIONAL_GRAV_SCALAR,C_WORLD_GRAVITY.Y * C_ADDITIONAL_GRAV_SCALAR)
+        body:setInertia(0)
+    end
+
+
     return not data.destroy
 end
 
@@ -91,6 +108,9 @@ end
 
 world.render = function()
     if world.is_active() then 
+        love.graphics.push()
+        love.graphics.scale(0.5,0.5)
+        love.graphics.pop()
         for _,body in ipairs(world.cur_world:getBodies()) do 
             local dt = body:getUserData() 
 
@@ -100,6 +120,5 @@ world.render = function()
         end
     end
 end
-
 
 return world 

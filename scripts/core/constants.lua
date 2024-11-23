@@ -3,12 +3,18 @@ C_TICKS_PER_SECOND = 60.0
 C_MAX_DELTA_ALLOWED = 1 / C_TICKS_PER_SECOND * 5
 
 C_GAMENAME = "demonical"
+C_WINDOW_DIMENSIONS = {
+    WIDTH=800,
+    HEIGHT=600
+}
 
 -- serializer keyterms
 C_FH_SERIAL_CONNECT = "="
 C_FH_SERIAL_TABLE_START = "{"
 C_FH_SERIAL_TABLE_END = "}"
 C_FH_SERIAL_DELIM = ","
+
+C_FONT_SIZE_REGULAR = 21
 
 -- separate animation layers so certain ones can be paused/unpaused
 C_RENDER_LAYERS = {
@@ -23,14 +29,31 @@ C_RENDER_LAYERS = {
 C_RENDER_INTERPOLATE_TYPE = {
     NONE = 1, --no interpolation
     NORMAL = 2, --interpolate transform
-    UV = 3, --interpolate transform and uv quad
 }
 
 -- scale factor for all rendered sprites
 C_RENDER_ROOT_SPRITE_SCALE = 2
+C_RENDER_ROOT_UI_SCALE = 2
+C_RENDER_TEXTURE_WRAPMODE = "repeat"
+
+
 -- default color when color is unspecified
 C_COLOR_WHITE = {r=255,g=255,b=255,a=255}
 C_COLOR_EMPTY = {r=0,g=0,b=0,a=0}
+
+C_UI_BOX_BACKGROUND_COLOR = {r=0,g=0,b=0,a=200}
+C_UI_BOX_OUTLINE_COLOR = {r=255,g=50,b=200,a=255}
+C_UI_MAX_BOX_EDGE_SIZE = 1
+C_UI_MAX_BOX_EDGE_SIZE = 6
+C_UI_BOX_EDGES = 1
+C_UI_BOX_ROUND_FACTOR = 200
+
+C_UI_DIALOGUE_DIMS = {WIDTH=250,HEIGHT=50}
+C_UI_DIALOGUE_TEXT_WIDTH = 240
+C_UI_DIALOGUE_UPDATE_FREQUENCY = 3
+C_UI_DIALOGUE_HOLD_SCALAR = 0.05
+C_UI_DIALOGUE_MIN_HOLD = 2
+C_UI_DIALOGUE_MAX_HOLD = 5
 
 -- love.threads channel identifiers
 C_THREADS_BLOCKING_CHANNEL = "blocking"
@@ -62,8 +85,10 @@ C_WORLD_POS_ITERATIONS = 12
 -- gravity value for the world 
 C_WORLD_GRAVITY = {
     X = 0,
-    Y = 1000,
+    Y = 25,
 }
+
+C_ADDITIONAL_GRAV_SCALAR = 0.25
 
 -- different contact types for the world contact filter function
 C_WORLD_CONTACT_TYPES = {
@@ -83,6 +108,7 @@ C_REG_TYPES = {
 
 C_LOGGER_LOG_FOLDER = "logs/"
 C_LOGGER_LEVELS = {
+    ERROR = 0,
     CORE = 1,
     NORMAL = 2,
     INFO = 3,
@@ -100,20 +126,31 @@ C_INPUT_IDS = {
     SHOOT="SHOOT",
 }
 
-C_PLAYER_HORI_MOVE_SPEED = 4 * C_WORLD_METER_SCALE
+C_PLAYER_HORI_MOVE_SPEED = 8 * C_WORLD_METER_SCALE
 -- how strong the initial impulse is in respect to C_PLAYER_HORI_MOVE_SPEED
 C_PLAYER_HORI_MOVE_START_SCALAR = 0.5
 -- the scalar for when the player moves without holding shift 
-C_PLAYER_WALK_SCALAR = 1
-
+C_PLAYER_WALK_SCALAR = 0.66
 -- time the player can jump for (s)
-C_PLAYER_MAX_JUMP_TIME = 0.4
+C_PLAYER_MAX_JUMP_TIME = 0.5
 -- initial impulse
 C_PLAYER_JUMP_STRENGTH = 10 * C_WORLD_METER_SCALE
 -- strength of fully held jump ability
-C_PLAYER_JUMP_HOLD_STRENGTH = 10 * C_WORLD_METER_SCALE / C_PLAYER_MAX_JUMP_TIME
+C_PLAYER_JUMP_HOLD_STRENGTH = 25 * C_WORLD_METER_SCALE
 -- downwards force to apply when jumping
 C_PLAYER_COUNTER_JUMP_FORCE = 250
-
 -- strength of forced gravity 
-C_PLAYER_DOWN_STRENGTH = 20
+C_PLAYER_DOWN_STRENGTH = 10 * C_WORLD_METER_SCALE
+-- variance from 0 that is allowed for the x-collision vector
+C_PLAYER_GROUND_CONNECT_THRES = 0.5
+
+C_CAMERA_MOVEMENT_TYPE = {
+    NORMAL=1, -- follows player on delay
+    FIXED=2, -- no movement
+    NORMAL_CURSOR=3, -- follows player and cursor position
+}
+
+C_CAMERA_BASE_SPEED = 0
+C_CAMERA_MAX_SPEED = 4
+C_CAMERA_TARGET_FORGIVENESS = 0
+C_CAMERA_MOUSE_CAPTURE_SCALAR = 0.25

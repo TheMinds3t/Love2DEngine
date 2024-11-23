@@ -17,7 +17,7 @@ logger.export = function(logname)
     logname = logname == nil and C_LOGGER_LOG_FOLDER.."latest.txt" or C_LOGGER_LOG_FOLDER..logname
     love.filesystem.createDirectory(C_LOGGER_LOG_FOLDER)
 
-    GAME().core.filehelper.write_file(logname, function()
+    GAME().filehelper.write_file(logname, function()
         local lines = {}
         for i,line in ipairs(logger.cur_log) do 
             insert(lines, line)

@@ -6,9 +6,9 @@ physics.init = function()
 end
 
 physics.new_rectangle = function(holder,x,y,w,h,style)
-    if GAME().core.world.is_active() then 
+    if GAME().world.is_active() then 
         style = style == nil and C_PHYSICS_BODY_TYPES.STATIC or style
-        local world = GAME().core.world.get_world()
+        local world = GAME().world.get_world()
         local ret = {
             body = love.physics.newBody(world, x, y, style),
             shape = love.physics.newRectangleShape(w, h)
@@ -22,9 +22,9 @@ physics.new_rectangle = function(holder,x,y,w,h,style)
 end
 
 -- physics.new_circle = function(holder,x,y,r,style)
---     if GAME().core.world.is_active() then 
+--     if GAME().world.is_active() then 
 --         style = style == nil and C_PHYSICS_BODY_TYPES.STATIC or style
---         local world = GAME().core.world.get_world()
+--         local world = GAME().world.get_world()
 --         local ret = {
 --             body = love.physics.newBody(world, x, y, style),
 --             shape = love.physics.newCircleShape(r)
@@ -38,7 +38,7 @@ end
 
 -- this is all that is needed to create a new entity in the world
 physics.create_holder_from = function(entry,x,y,params)
-    local new_obj = GAME().core.registry.get_registry_object(C_REG_TYPES.OBJECT, entry)
+    local new_obj = GAME().registry.get_registry_object(C_REG_TYPES.OBJECT, entry)
     new_obj.id = entry 
     new_obj.contact_type = new_obj.contact_type == nil and C_WORLD_CONTACT_TYPES.ALL or new_obj.contact_type
 
@@ -54,6 +54,10 @@ physics.create_holder_from = function(entry,x,y,params)
 
     new_obj:init(x,y,params or {})
 
+    if new_obj.id == "PLAYER" then 
+        GAME().world.add_player(new_obj)
+    end
+
     return new_obj
 end
 
@@ -61,14 +65,38 @@ physics.util = {
     is_tick = function(self, tick, off)
         off = off == nil and 0 or off 
 
-        if (self.ticks + off) % tick == 0 and (self.last_tick_state or 0) ~= true then
-            self.last_tick_state = true  
+        if (self.ticks + off) % tick == 0 and (self.last_tick_state or 0) ~= self.ticks then
+            self.last_tick_state = self.ticks  
             return true
-        else 
-            self.last_tick_state = false
+        elseif (self.ticks + off) % tick ~= 0 then 
+            self.last_tick_state = 0
         end
 
         return false 
+    end,
+
+    wrap_screen = function(self, body)
+        local viewport = GAME().camera.get_camera_viewport()
+
+        if viewport then 
+            local width = (self.width or 0) / 2
+            local height = (self.height or 0) / 2
+            if body:getY() > viewport.y + viewport.height + height then 
+                body:setY(viewport.y - height)
+            end
+    
+            if body:getY() < viewport.y - height then 
+                body:setY(viewport.y + viewport.height + width)
+            end
+    
+            if body:getX() < viewport.x - width then 
+                body:setX(viewport.x + viewport.width + width)
+            end
+    
+            if body:getX() > viewport.x + viewport.width + width then 
+                body:setX(viewport.x - width )
+            end    
+        end
     end
 }
 
