@@ -7,6 +7,13 @@ C_WINDOW_DIMENSIONS = {
     WIDTH=800,
     HEIGHT=600
 }
+C_SYSTEM_OS_TYPES = {
+    WINDOWS = "Windows",
+    LINUX = "Linux",
+    ANDROID = "Android",
+    iOS = "iOS",
+    MAC = "OS X"
+}
 
 -- serializer keyterms
 C_FH_SERIAL_CONNECT = "="
@@ -43,7 +50,7 @@ C_COLOR_EMPTY = {r=0,g=0,b=0,a=0}
 
 C_UI_BOX_BACKGROUND_COLOR = {r=0,g=0,b=0,a=200}
 C_UI_BOX_OUTLINE_COLOR = {r=255,g=50,b=200,a=255}
-C_UI_MAX_BOX_EDGE_SIZE = 1
+C_UI_MIN_BOX_EDGE_SIZE = 1
 C_UI_MAX_BOX_EDGE_SIZE = 6
 C_UI_BOX_EDGES = 1
 C_UI_BOX_ROUND_FACTOR = 200

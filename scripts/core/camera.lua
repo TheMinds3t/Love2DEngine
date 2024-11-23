@@ -30,11 +30,11 @@ cam.init = function()
     cam.default_updates[C_CAMERA_MOVEMENT_TYPE.NORMAL_CURSOR] = function(dt)
         if cam.cur_cam.params ~= nil and cam.cur_cam.params.target then 
             local x,y,w,h = cam.get_camera_viewport()
-            local mouse_pos = cam.get_position_in_cam(GAME().ui.mouse_x or 0, GAME().ui.mouse_y or 0)
+            local mouse_pos = cam.get_position_in_cam(GAME().input.mouse_x or 0, GAME().input.mouse_y or 0, true)
             GAME().log(mouse_pos.x..","..mouse_pos.y)
 
-            local targ_x = cam.cur_cam.params.target.x + ((GAME().input.mouse_x or C_WINDOW_DIMENSIONS.WIDTH / 2.0) - C_WINDOW_DIMENSIONS.WIDTH / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR / (GAME().ui.scaled_x or 1)
-            local targ_y = cam.cur_cam.params.target.y + ((GAME().input.mouse_y or C_WINDOW_DIMENSIONS.HEIGHT / 2.0) - C_WINDOW_DIMENSIONS.HEIGHT / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR / (GAME().ui.scaled_y or 1)
+            local targ_x = cam.cur_cam.params.target.x + ((mouse_pos.x or C_WINDOW_DIMENSIONS.WIDTH / 2.0) - C_WINDOW_DIMENSIONS.WIDTH / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR / C_RENDER_ROOT_SPRITE_SCALE
+            local targ_y = cam.cur_cam.params.target.y + ((mouse_pos.y or C_WINDOW_DIMENSIONS.HEIGHT / 2.0) - C_WINDOW_DIMENSIONS.HEIGHT / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR / C_RENDER_ROOT_SPRITE_SCALE
             cam.follow(cam.cur_cam,dt,targ_x,targ_y)
         end
     end    
@@ -86,12 +86,20 @@ cam.get_camera_viewport = function()
     end
 end
 
-cam.get_position_in_cam = function(x_pos,y_pos)
+cam.get_position_in_cam = function(x_pos,y_pos,screen_space)
     if cam.is_active() then 
-        return {
-            x= x_pos - cam.cur_cam.x - C_WINDOW_DIMENSIONS.WIDTH / 2.0,
-            y= y_pos - cam.cur_cam.y - C_WINDOW_DIMENSIONS.HEIGHT / 2.0,
-        }
+        if screen_space then 
+            local sx,sy,ox,oy = GAME().ui.get_window_scale()
+            return {
+                x = math.min(C_WINDOW_DIMENSIONS.WIDTH, math.max(0, x_pos / sx - ox / 2.0 / sx)),
+                y = math.min(C_WINDOW_DIMENSIONS.HEIGHT, math.max(0, y_pos / sy - oy / 2.0 / sy)),
+            }
+        else 
+            return {
+                x= x_pos - cam.cur_cam.x - C_WINDOW_DIMENSIONS.WIDTH / 2.0,
+                y= y_pos - cam.cur_cam.y - C_WINDOW_DIMENSIONS.HEIGHT / 2.0,
+            }    
+        end
     else
         return nil 
     end

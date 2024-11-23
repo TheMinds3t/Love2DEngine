@@ -87,9 +87,10 @@ render.create_sprite = function(reg_id)
     sprite.anim_file = render.flush_anim_file(GAME().registry.get_registry_object(C_REG_TYPES.ANIM_FILE, sprite.anim_file))
     sprite.cur_anim = sprite.default_anim
     sprite.frame = 1
-    sprite.frame_offset = 0
+    sprite.frame_off = 0
     sprite.x = 0
     sprite.y = 0
+    sprite.rot = 0
 
     return sprite
 end
@@ -136,6 +137,10 @@ render.update_sprite = function(sprite, holder, dt)
     end
 end
 
+render.update_mesh = function(sprite, holder, dt)
+
+end
+
 -- sprite: userdata from render.create_sprite
 -- frame_off: int to offset animation time 
 -- params: table. Contains:
@@ -165,12 +170,13 @@ render.draw_mesh = function(mesh, params)
     love.graphics.setColor(1,1,1,1)
     love.graphics.pop()
 end
+
 -- sprite: userdata from render.create_sprite
 -- frame_off: int to offset animation time 
 -- params: table. Contains:
 -- x: int to change x_pos
 -- y: int to change y_pos
--- rot: int, rotates the sprite
+-- rot: int, rotates the sprite (degrees)
 -- x_scale: int, x scale multiplier
 -- y_scale: int, y scale multiplier
 -- color_mult: color to multiply frame color by 
@@ -188,17 +194,17 @@ render.draw_sprite = function(sprite, frame_off, params)
     
     love.graphics.push()
 
-    local frame, time, nframe, perc = render.get_interpolate_perc(sprite, frame_off)
-    local color = render.interpolate_color(sprite, frame_off, params.color_mult, params.color_add)
+    local frame, time, nframe, perc = render.get_interpolate_perc(sprite, frame_off + sprite.frame_off)
+    local color = render.interpolate_color(sprite, frame_off + sprite.frame_off, params.color_mult, params.color_add)
     love.graphics.scale(C_RENDER_ROOT_SPRITE_SCALE)
     -- render.shader:send("mult_col",{color.r / 255 * params.color_mult.r / 255,color.g / 255 * params.color_mult.g / 255,color.b / 255 * params.color_mult.b / 255,color.a / 255 * params.color_mult.a / 255})
     -- render.shader:send("add_col",{params.color_add.r / 255,params.color_add.g / 255,params.color_add.b / 255,params.color_add.a / 255})
-    love.graphics.setColor(color.r/255, color.g/255, color.b/255, color.a/255)
+    love.graphics.setColor(color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0)
 
     love.graphics.draw(frame.image, frame.dimensions, 
         (sprite.x+render.interpolate(sprite,"x_pos")+params.x) / C_RENDER_ROOT_SPRITE_SCALE, 
         (sprite.y+render.interpolate(sprite,"y_pos")+params.y) / C_RENDER_ROOT_SPRITE_SCALE, 
-        math.rad(render.interpolate(sprite,"rotate") + params.rot), 
+        math.rad(render.interpolate(sprite,"rotate") + params.rot + sprite.rot), 
         render.interpolate(sprite,"x_scale") * params.x_scale, 
         render.interpolate(sprite,"y_scale") * params.y_scale, 
         frame.x_pivot, frame.y_pivot)
@@ -253,7 +259,7 @@ render.get_frame = function(sprite,off,ind_off)
     ind_off = ind_off == nil and 0 or ind_off 
 
     local anim = sprite.anim_file.animations[sprite.cur_anim]
-    local cur_frame = ((math.floor(sprite.frame) + sprite.frame_offset + off) % (anim.frame_time))
+    local cur_frame = ((math.floor(sprite.frame) + off) % (anim.frame_time))
     local ret = 1
     
     while cur_frame > anim.frames[ret].frames do 

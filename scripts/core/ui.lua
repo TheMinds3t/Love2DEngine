@@ -7,6 +7,9 @@ ui.init = function()
     ui.buffer_sprite = GAME().render.create_sprite("UI_BUFFER_WHEEL")
     ui.buffer_sprite.opacity = 0
     ui.dialogue_opacity = 0
+    local w,h = love.graphics.getDimensions()
+
+    ui.recalc_window_scale(w,h)
 end
 
 ui.update = function(dt) 
@@ -89,16 +92,15 @@ end
 
 ui.get_window_scale = function(maintain_ratio)
     maintain_ratio = maintain_ratio == nil and true or maintain_ratio
-    local og_w,og_h = love.graphics.getDimensions()
-    local w,h = og_w, og_h
-    w = w / GAME().render.canvas:getWidth()
-    h = h / GAME().render.canvas:getHeight()
 
-    if maintain_ratio then 
-        w = math.min(w,h)
-        h = w    
-    end
+    -- return w, h, ui.off_x, ui.off_y
+    return ui.scaled_x, ui.scaled_y, ui.off_x, ui.off_y
+end
 
+ui.recalc_window_scale = function(w,h)
+    local og_w,og_h = w, h
+    w = math.min(w / GAME().render.canvas:getWidth(), h / GAME().render.canvas:getHeight())
+    h = w
     local w_size = GAME().render.canvas:getWidth() * w
     local h_size = GAME().render.canvas:getHeight() * h
 
@@ -106,8 +108,10 @@ ui.get_window_scale = function(maintain_ratio)
     ui.scaled_y = h
     ui.off_x = math.floor(og_w - w_size)
     ui.off_y = math.floor(og_h - h_size)
-    
-    return w, h, ui.off_x, ui.off_y
+end
+
+function love.resize(w, h)
+    ui.recalc_window_scale(w,h)
 end
 
 ui.add_dialogue = function(msg)
