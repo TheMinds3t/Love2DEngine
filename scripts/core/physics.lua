@@ -17,6 +17,11 @@ physics.new_rectangle = function(holder,x,y,w,h,style)
         ret.fixture = love.physics.newFixture(ret.body, ret.shape) -- this holds most properties
         ret.body:setUserData(holder)
         ret.fixture:setUserData(holder)
+        ret.fixture:setRestitution(0)
+        ret.fixture:setDensity(0)
+        ret.body:setAngularDamping(0)
+        ret.body:setLinearDamping(0)
+
         return ret
     end
 end
@@ -39,9 +44,15 @@ end
 -- this is all that is needed to create a new entity in the world
 physics.create_holder_from = function(entry,x,y,params)
     local new_obj = GAME().registry.get_registry_object(C_REG_TYPES.OBJECT, entry)
+
+    if new_obj == nil then 
+        return 
+    end
+
     new_obj.id = entry 
     new_obj.contact_type = new_obj.contact_type == nil and C_WORLD_CONTACT_TYPES.ALL or new_obj.contact_type
-
+    new_obj.index = GAME().world.get_ent_index()
+    
     if new_obj.phys then 
         new_obj.phys.fixture:setCategory(new_obj.contact_type)
 
@@ -52,7 +63,7 @@ physics.create_holder_from = function(entry,x,y,params)
 
     new_obj.util = physics.util
 
-    new_obj:init(x,y,params or {})
+    new_obj:init(x,y,params == nil and {} or params)
 
     if new_obj.id == "PLAYER" then 
         GAME().world.add_player(new_obj)

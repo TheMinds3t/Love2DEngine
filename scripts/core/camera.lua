@@ -31,7 +31,6 @@ cam.init = function()
         if cam.cur_cam.params ~= nil and cam.cur_cam.params.target then 
             local x,y,w,h = cam.get_camera_viewport()
             local mouse_pos = cam.get_position_in_cam(GAME().input.mouse_x or 0, GAME().input.mouse_y or 0, true)
-            GAME().log(mouse_pos.x..","..mouse_pos.y)
 
             local targ_x = cam.cur_cam.params.target.x + ((mouse_pos.x or C_WINDOW_DIMENSIONS.WIDTH / 2.0) - C_WINDOW_DIMENSIONS.WIDTH / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR
             local targ_y = cam.cur_cam.params.target.y + ((mouse_pos.y or C_WINDOW_DIMENSIONS.HEIGHT / 2.0) - C_WINDOW_DIMENSIONS.HEIGHT / 2.0) * C_CAMERA_MOUSE_CAPTURE_SCALAR
@@ -70,7 +69,7 @@ cam.undo_cam_transforms = function()
 end
 
 cam.is_active = function()
-    return cam.cur_cam ~= nil 
+    return cam.cur_cam
 end
 
 cam.get_camera_viewport = function()
@@ -96,8 +95,8 @@ cam.get_position_in_cam = function(x_pos,y_pos,screen_space)
             }
         else 
             return {
-                x= x_pos - cam.cur_cam.x - C_WINDOW_DIMENSIONS.WIDTH / 2.0,
-                y= y_pos - cam.cur_cam.y - C_WINDOW_DIMENSIONS.HEIGHT / 2.0,
+                x= x_pos - cam.cur_cam.x + C_WINDOW_DIMENSIONS.WIDTH / 2.0,
+                y= y_pos - cam.cur_cam.y + C_WINDOW_DIMENSIONS.HEIGHT / 2.0,
             }    
         end
     else

@@ -90,14 +90,13 @@ ui.draw = function()
     end
 end
 
-ui.get_window_scale = function(maintain_ratio)
-    maintain_ratio = maintain_ratio == nil and true or maintain_ratio
-
-    -- return w, h, ui.off_x, ui.off_y
+ui.get_window_scale = function()
     return ui.scaled_x, ui.scaled_y, ui.off_x, ui.off_y
 end
 
 ui.recalc_window_scale = function(w,h)
+    w = w == nil and love.graphics.getWidth() or w 
+    h = h == nil and love.graphics.getHeight() or h 
     local og_w,og_h = w, h
     w = math.min(w / GAME().render.canvas:getWidth(), h / GAME().render.canvas:getHeight())
     h = w
@@ -108,6 +107,7 @@ ui.recalc_window_scale = function(w,h)
     ui.scaled_y = h
     ui.off_x = math.floor(og_w - w_size)
     ui.off_y = math.floor(og_h - h_size)
+    return ui.get_window_scale()
 end
 
 function love.resize(w, h)

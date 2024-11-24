@@ -4,6 +4,7 @@ return {
     clone_on_create = true,
     entries = {
         PLAYER = GAME().filehelper.load_file("scripts/definitions/objects/player.lua"),
+        BULLET = GAME().filehelper.load_file("scripts/definitions/objects/bullet.lua"),
         BLOCK = {
             init = function(self,x,y,params)
                 self.width = params.width or 200
@@ -17,13 +18,13 @@ return {
                 self.phys.body:setAngle(math.rad(self.rot))
             end,
             render = function(self, body) 
-                love.graphics.push()
-                local x,y = body:getPosition()
-                love.graphics.setColor(255,0,0,255)
-                love.graphics.translate(x,y)
-                love.graphics.rotate(body:getAngle())
-                love.graphics.rectangle("fill", -self.width / 2, -self.height / 2, self.width, self.height)
-                love.graphics.pop()
+                -- love.graphics.push()
+                -- local x,y = body:getPosition()
+                -- love.graphics.setColor(255,0,0,255)
+                -- love.graphics.translate(x,y)
+                -- love.graphics.rotate(body:getAngle())
+                -- love.graphics.rectangle("fill", -self.width / 2, -self.height / 2, self.width, self.height)
+                -- love.graphics.pop()
                 GAME().render.draw_mesh(self.mesh)
             end,
         },
@@ -46,13 +47,13 @@ return {
                 end
             end,
             render = function(self, body) 
-                love.graphics.push()
-                local x,y = body:getPosition()
-                love.graphics.setColor(255,0,0,255)
-                love.graphics.translate(x,y)
-                love.graphics.rotate(body:getAngle())
-                love.graphics.rectangle("fill", -self.width / 2, -self.height / 2, self.width, self.height)
-                love.graphics.pop()
+                -- love.graphics.push()
+                -- local x,y = body:getPosition()
+                -- love.graphics.setColor(255,0,0,255)
+                -- love.graphics.translate(x,y)
+                -- love.graphics.rotate(body:getAngle())
+                -- love.graphics.rectangle("fill", -self.width / 2, -self.height / 2, self.width, self.height)
+                -- love.graphics.pop()
                 GAME().render.draw_mesh(self.mesh)
             end,
         },
@@ -103,6 +104,43 @@ return {
                 body:setX(400 + math.cos(self.time * 1.67) * 300)
             end,
             render = function(self, body) end,
+        },
+        EFFECT = {
+            init = function(self,x,y,params)
+                params.sprite = params.sprite == nil and "BULLET_NORMAL" or params.sprite
+                params.anim_name = params.anim_name == nil and "effect" or params.anim_name
+                params.rot = params.rot == nil and 0 or params.rot
+                params.gravity_scale = params.gravity_scale == nil and 0 or params.gravity_scale
+                self.params = params 
+                self.phys = GAME().physics.new_rectangle(self,x,y,25,25,C_PHYSICS_BODY_TYPES.DYNAMIC)
+                self.phys.body:setGravityScale(params.gravity_scale)
+                self.sprite = GAME().render.create_sprite(params.sprite)
+                self.sprite.cur_anim = params.anim_name
+                GAME().render.update_sprite(self.sprite, self, 0)
+                self.contact_type = params.contact_type == nil and C_WORLD_CONTACT_TYPES.NONE or params.contact_type
+            end,
+            update = function(self, dt, body)
+                GAME().render.update_sprite(self.sprite, self, dt)
+
+                if self.params.angle then 
+                    self.sprite.rot = self.params.angle 
+
+                    if self.params.velocity then 
+                        body:setLinearVelocity(math.cos(self.params.angle) * self.params.velocity * C_WORLD_METER_SCALE, math.sin(self.params.angle) * self.params.velocity * C_WORLD_METER_SCALE)
+                    end
+                end
+
+                if self.params.update then 
+                    self.params.update(self, dt, body)
+                end
+
+                if GAME().render.sprite_animation_finished(self.sprite) then 
+                    self.destroy = true 
+                end
+            end,
+            render = function(self, body) 
+                GAME().render.draw_sprite(self.sprite,0)
+            end
         }
     }
 }

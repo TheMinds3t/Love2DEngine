@@ -1,6 +1,6 @@
 require("scripts.core.constants")
 local player = {
-    init = function(self,x,y)
+    init = function(self,x,y,params)
         self.phys = GAME().physics.new_rectangle(self,x,y,25,50,C_PHYSICS_BODY_TYPES.DYNAMIC)
         self.phys.fixture:setRestitution(0)
         self.phys.fixture:setDensity(0)
@@ -24,7 +24,6 @@ local player = {
             return targx, (self.sprinting and 1.0 or C_PLAYER_WALK_SCALAR)
         end
     end,
-    max_jump_time = C_PLAYER_MAX_JUMP_TIME,
     update = function(self, dt, body)
         local move_scale = 1
         GAME().render.update_sprite(self.sprite, self, dt)
@@ -38,9 +37,9 @@ local player = {
                 self.active_jump = true 
             end
 
-            self.jump_time = math.min((self.jump_time or 0) + dt, self.max_jump_time)
+            self.jump_time = math.min((self.jump_time or 0) + dt, C_PLAYER_MAX_JUMP_TIME)
 
-            if self.jump_time < self.max_jump_time and self.active_jump == true then 
+            if self.jump_time < C_PLAYER_MAX_JUMP_TIME and self.active_jump == true then 
                 -- targy = targy - C_PLAYER_JUMP_HOLD_STRENGTH*move_scale
                 body:applyLinearImpulse(0,-C_PLAYER_JUMP_HOLD_STRENGTH*move_scale*dt)
             end
@@ -92,19 +91,22 @@ local player = {
             body:applyForce(0,C_PLAYER_COUNTER_JUMP_FORCE*move_scale)
         end 
 
+        if GAME().input.is_input_active(C_INPUT_IDS.SHOOT) and self.util.is_tick(self,10) then 
+            local cam_pos = GAME().camera.get_position_in_cam(body:getX(),body:getY())
+            local mouse_pos = GAME().camera.get_position_in_cam(GAME().input.mouse_x,GAME().input.mouse_y,true)
+            local ang = (GAME().util.get_angle_towards(cam_pos.x, cam_pos.y, mouse_pos.x, mouse_pos.y, true) - 90) % 360
+            GAME().physics.create_holder_from("BULLET",body:getX(),body:getY(),{angle=ang,velocity=20,source=self})
+        end
+
 
 
         self.util.wrap_screen(self, body)
     end,
     render = function(self, body) 
         self.time = self.time or 0
-        local rainbow = function(off) return math.cos(self.time * 5 + off * math.pi * 2) * 128 + 127 end 
-        local rainbow_col = {r=-rainbow(0),g=-rainbow(0.3),b=-rainbow(0.6)}
-        GAME().render.draw_sprite(self.sprite,0,{color_add=rainbow_col,x_scale=(self.sprite.flipx and -1 or 1)})
-        love.graphics.translate(-5,-5)
+        GAME().render.draw_sprite(self.sprite,0,{color_add=GAME().util.rainbow_color(self.time,0,5)})
     end,
     on_collide = function(self, b_data, a, b, x, y, coll)
-        GAME().log(x..","..y)
         if y > 0 and math.abs(x) <= C_PLAYER_GROUND_CONNECT_THRES then -- bottom face collided
             self.airborne = false 
             self.grounded = true 

@@ -85,9 +85,9 @@ end
 
 -- Draw a coloured rectangle.
 function love.draw()
-    local cam_active = main.camera.is_active()
+    local cam = main.camera.is_active()
 
-    if cam_active then 
+    if cam then 
         main.camera.apply_cam_transforms()
     end
     
@@ -98,7 +98,7 @@ function love.draw()
         main.world.render()
     end
 
-    if cam_active then 
+    if cam then 
         main.camera.undo_cam_transforms()
     end
 
@@ -126,4 +126,22 @@ function love.draw()
     end
 
     love.graphics.print("Current FPS: "..tostring(love.timer.getFPS()), 10, 10)
+
+    if cam then 
+        local mouse_pos = GAME().camera.get_position_in_cam(GAME().input.mouse_x or 0, GAME().input.mouse_y or 0, true)
+        love.graphics.print("Mouse Pos: "..GAME().util.round(mouse_pos.x)..","..GAME().util.round(mouse_pos.y), 10, 30)
+
+        if cam.params.target then 
+            local targ_pos = GAME().camera.get_position_in_cam(cam.params.target.x, cam.params.target.y)
+            love.graphics.print("Target Pos: "..GAME().util.round(targ_pos.x)..","..GAME().util.round(targ_pos.y), 10, 50)    
+        end
+    end
+
+    if main.world.players[1] then 
+        local body = main.world.players[1].phys.body 
+        local cam_pos = GAME().camera.get_position_in_cam(body:getX(),body:getY())
+        local mouse_pos = GAME().camera.get_position_in_cam(GAME().input.mouse_x,GAME().input.mouse_y,true)
+        local ang = GAME().util.get_angle_towards(cam_pos.x, cam_pos.y, mouse_pos.x, mouse_pos.y, true)
+        love.graphics.print("Degree: "..ang, 10, 70)    
+    end
 end

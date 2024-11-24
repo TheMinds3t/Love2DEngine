@@ -49,7 +49,8 @@ util.interpolate_transform = function(transa, transb, perc)
 end
 
 util.round = function(num, sig_figs)
-    return math.floor(num*10^sig_figs) / 10 ^ (sig_figs - 2)
+    sig_figs = sig_figs == nil and (""..num):sub(1,(""..num):find(".")):len() + 2 or sig_figs
+    return math.floor(num*10^sig_figs) / 10 ^ (sig_figs)
 end
 
 util.split_dict = function(dict, flip_result)
@@ -66,14 +67,37 @@ util.split_dict = function(dict, flip_result)
     return keyset, valset end
 end
 
-util.get_angle_towards = function(x1,y1,x2,y2)
-    return math.atan2(x1-x2,y1-y2)
+util.get_angle_towards = function(x1,y1,x2,y2,deg)
+    deg = deg == nil and false or deg
+    local ang = util.wrap_angle(math.atan2(x1-x2,y1-y2))
+    return deg == true and math.deg(ang) or ang
 end
 
 util.get_distance = function(x1,y1,x2,y2)
     local x = x2 - x1 
     local y = y2 - y1
     return math.sqrt(y^2 + x^2)
+end
+
+util.rainbow_color = function(time, off, speed, alpha)
+    time = time == nil and 0 or time 
+    off = off == nil and 0 or off 
+    speed = speed == nil and 1 or speed 
+    alpha = alpha == nil and 255 or alpha
+    local rainbow = function(offset) return math.cos(time*speed + offset * math.pi * 2) * 128 + 127 end 
+    return {r=-rainbow(0.0),g=-rainbow(1.0/3.0),b=-rainbow(2/3),a=alpha}
+end
+
+util.wrap_angle = function(angle, degrees)
+	degrees = degrees == nil and false or degrees
+	if degrees then angle = angle / 180 * math.pi end
+
+
+	if angle < 0 then return math.pi - math.abs(angle + math.pi) 
+    else
+		return math.pi * 2 - angle
+	end
+    return angle
 end
 
 return util

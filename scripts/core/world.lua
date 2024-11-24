@@ -19,6 +19,12 @@ world.start_world = function()
     world.cur_world:setCallbacks(world.contact_start, world.contact_end, world.pre_solve_contact, world.post_solve_contact)
     world.cur_world:setContactFilter(world.contact_filter)
     world.world_seed = love.timer.getTime()
+    world.cur_ent_index = 1
+end
+
+world.get_ent_index = function()
+    world.cur_ent_index = world.cur_ent_index + 1
+    return world.cur_ent_index - 1
 end
 
 world.contact_filter = function(a, b)
@@ -26,12 +32,17 @@ world.contact_filter = function(a, b)
     if a_dt and b_dt then 
         if a_dt.contact_type == C_WORLD_CONTACT_TYPES.NONE or b_dt.contact_type == C_WORLD_CONTACT_TYPES.NONE then 
             return false 
-        elseif a_dt.contact_type == C_WORLD_CONTACT_TYPES.DYNAMIC and a_dt.should_collide and a_dt:should_collide(b_dt, a, b) then 
-            return true 
-        elseif b_dt.contact_type == C_WORLD_CONTACT_TYPES.DYNAMIC and b_dt.should_collide and b_dt:should_collide(b_dt, a, b) then 
-            return true 
-        else 
-            return a_dt.contact_type == C_WORLD_CONTACT_TYPES.ALL
+        else
+            local a_col = a_dt.contact_type == C_WORLD_CONTACT_TYPES.ALL or a_dt.should_collide and a_dt:should_collide(b_dt, a, b)
+            local b_col = b_dt.contact_type == C_WORLD_CONTACT_TYPES.ALL or b_dt.should_collide and b_dt:should_collide(a_dt, b, a)
+            
+            if a_dt.contact_type == C_WORLD_CONTACT_TYPES.DYNAMIC and a_col then 
+                return true 
+            elseif b_dt.contact_type == C_WORLD_CONTACT_TYPES.DYNAMIC and b_col then 
+                return true 
+            else 
+                return a_col and b_col
+            end                
         end
     end
 
@@ -98,6 +109,9 @@ world.update = function(dt)
                     data.phys.fixture:destroy()
                     data.phys.body:destroy()
                     GAME().log("Removed object \'"..data.id.."\' from world. #bodies = "..tostring(#bodies), C_LOGGER_LEVELS.DEBUG)
+                elseif data.next_tick ~= nil then 
+                    data.next_tick()
+                    data.next_tick = nil
                 end
             end
         end

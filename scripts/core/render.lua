@@ -84,6 +84,7 @@ end
 
 render.create_sprite = function(reg_id)
     local sprite = GAME().registry.get_registry_object(C_REG_TYPES.SPRITE, reg_id)
+    sprite.anim_path = sprite.anim_file
     sprite.anim_file = render.flush_anim_file(GAME().registry.get_registry_object(C_REG_TYPES.ANIM_FILE, sprite.anim_file))
     sprite.cur_anim = sprite.default_anim
     sprite.frame = 1
@@ -124,6 +125,10 @@ render.update = function(dt)
 end
 
 render.update_sprite = function(sprite, holder, dt)
+    if not render.validate_sprite(sprite) then 
+        return 
+    end
+
     local layer = sprite.anim_file.animations[sprite.cur_anim].anim_layer 
 
     if holder then 
@@ -167,8 +172,47 @@ render.draw_mesh = function(mesh, params)
     local color = render.apply_colors(params.color, params.color_mult, params.color_add)
     love.graphics.setColor(color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0)
     love.graphics.draw(mesh.mesh, mesh.x / C_RENDER_ROOT_SPRITE_SCALE + params.x, mesh.y / C_RENDER_ROOT_SPRITE_SCALE + params.y, math.rad(params.rot + mesh.rot), params.x_scale, params.y_scale, mesh.width / 2.0, mesh.height / 2.0)
-    love.graphics.setColor(1,1,1,1)
     love.graphics.pop()
+    love.graphics.setColor(1,1,1,1)
+end
+
+render.validate_sprite = function(sprite,log_error)
+    log_error = log_error == nil and true or log_error 
+
+    if not sprite then 
+        if log_error then 
+            GAME().log("Sprite is nil!!",C_LOGGER_LEVELS.ERROR)
+        end
+        return false 
+    end
+
+    if not sprite.anim_file then 
+        if log_error then 
+            GAME().log("Animation file \'"..tostring(sprite.anim_path).."\' is invalid!",C_LOGGER_LEVELS.ERROR)
+        end
+        
+        return false 
+    end
+
+    if sprite.anim_file.animations == nil then 
+        if log_error then 
+            GAME().log("Animation file \'"..tostring(sprite.anim_path).."\' is invalid! No \'animations\' structure detected.",C_LOGGER_LEVELS.ERROR)
+        end
+
+        return false 
+    end
+
+    local anim = sprite.anim_file.animations[sprite.cur_anim]
+
+    if not anim then 
+        if log_error then 
+            GAME().log("Animation \'"..tostring(sprite.cur_anim).."\' does not exist in \'"..tostring(sprite.anim_path).."\', aborting...", C_LOGGER_LEVELS.ERROR) 
+        end
+        
+        return false 
+    end
+
+    return true 
 end
 
 -- sprite: userdata from render.create_sprite
@@ -191,7 +235,18 @@ render.draw_sprite = function(sprite, frame_off, params)
     params.y_scale = params.y_scale == nil and 1 or params.y_scale
     params.color_mult = params.color_mult == nil and C_COLOR_WHITE or params.color_mult
     params.color_add = params.color_add == nil and C_COLOR_EMPTY or params.color_add
+
+    if not render.validate_sprite(sprite) then 
+        return
+    end
     
+    local anim = sprite.anim_file.animations[sprite.cur_anim]
+
+    -- stop render if animation is finished
+    if render.sprite_animation_finished(sprite) then
+        return
+    end
+
     love.graphics.push()
 
     local frame, time, nframe, perc = render.get_interpolate_perc(sprite, frame_off + sprite.frame_off)
@@ -205,12 +260,12 @@ render.draw_sprite = function(sprite, frame_off, params)
         (sprite.x+render.interpolate(sprite,"x_pos")+params.x) / C_RENDER_ROOT_SPRITE_SCALE, 
         (sprite.y+render.interpolate(sprite,"y_pos")+params.y) / C_RENDER_ROOT_SPRITE_SCALE, 
         math.rad(render.interpolate(sprite,"rotate") + params.rot + sprite.rot), 
-        render.interpolate(sprite,"x_scale") * params.x_scale, 
+        render.interpolate(sprite,"x_scale") * params.x_scale * (sprite.flipx and -1 or 1), 
         render.interpolate(sprite,"y_scale") * params.y_scale, 
         frame.x_pivot, frame.y_pivot)
 
-    love.graphics.setColor(1,1,1,1)
     love.graphics.pop()
+    love.graphics.setColor(1,1,1,1)
     -- love.graphics.print("r="..color.r..",g="..color.g..",b="..color.b..",a="..color.a,sprite.x,sprite.y)
 end
 
@@ -259,7 +314,14 @@ render.get_frame = function(sprite,off,ind_off)
     ind_off = ind_off == nil and 0 or ind_off 
 
     local anim = sprite.anim_file.animations[sprite.cur_anim]
-    local cur_frame = ((math.floor(sprite.frame) + off) % (anim.frame_time))
+    local cur_frame = ((math.floor(sprite.frame) + off))
+
+    if anim.no_loop ~= true then 
+        cur_frame = cur_frame % anim.frame_time
+    else
+        cur_frame = math.min(cur_frame, anim.frame_time + 1)
+    end
+
     local ret = 1
     
     while cur_frame > anim.frames[ret].frames do 
@@ -276,6 +338,20 @@ render.get_frame = function(sprite,off,ind_off)
     end
 
     return anim.frames[ret], cur_frame, ret
+end
+
+render.sprite_animation_finished = function(sprite)
+    if not render.validate_sprite(sprite) then 
+        return true
+    end
+
+    local anim = sprite.anim_file.animations[sprite.cur_anim]
+
+    if anim.no_loop == true and sprite.frame >= anim.frame_time then
+        return true 
+    end
+
+    return false 
 end
 
 return render
