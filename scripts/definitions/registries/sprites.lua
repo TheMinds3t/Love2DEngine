@@ -15,6 +15,12 @@ return {
         BULLET_NORMAL = {
             anim_file = "BULLET_NORMAL",
             default_anim = "bullet",
+        },
+        ENEMY_SPIDER = {
+            anim_file = "ENEMY_SPIDER",
+            default_anim = "idle",
+            healthbar_offset = {x=0,y=50},
+            healthbar_dims = {width=32,height=3}
         }
     }
 }

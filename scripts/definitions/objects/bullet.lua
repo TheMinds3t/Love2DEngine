@@ -9,6 +9,8 @@ local bullet = {
         params.lifetime = params.lifetime == nil and 5 or params.lifetime
         params.sprite = params.sprite == nil and "BULLET_NORMAL" or params.sprite
         params.fx_vel_scale = params.fx_vel_scale == nil and 0.0 or params.fx_vel_scale
+        params.mass = params.mass == nil and 0.1 or params.mass
+        params.wall_collide = params.wall_collide == nil and true or params.wall_collide
         return params 
     end,
     init = function(self,x,y,params)
@@ -16,6 +18,7 @@ local bullet = {
         self.phys.body:setFixedRotation(true)
         self.phys.body:setBullet(true)
         self.params = self.create_params(params)
+        self.phys.body:setMass(self.params.mass)
         self.sprite = GAME().render.create_sprite(params.sprite)
         GAME().render.update_sprite(self.sprite, self, 0)
     end,
@@ -43,6 +46,10 @@ local bullet = {
         if self.time > self.params.lifetime then 
             self.remove_bullet(self, body)
         end
+
+        if self.params.update ~= nil then 
+            self.params.update(self, dt, body)
+        end
     end,
     render = function(self, body) 
         self.time = self.time or 0
@@ -56,7 +63,8 @@ local bullet = {
         self.remove_bullet(self, a)
     end,
     should_collide = function(self, b_dt, a, b)
-        return b_dt.id ~= self.id and (b_dt.wall == true or self.params.source == nil or 
+        return b_dt.id ~= self.id and (b_dt.wall == true and self.params.wall_collide == true 
+            or self.params.source == nil or 
             (b_dt.id == "PLAYER" and not self.params.source.is_player 
                 or b_dt.enemy == true and self.params.source.is_player ))
     end

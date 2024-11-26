@@ -6,6 +6,7 @@ return {
         PLAYER = GAME().filehelper.load_file("scripts/definitions/objects/player.lua"),
         BULLET = GAME().filehelper.load_file("scripts/definitions/objects/bullet.lua"),
         ENEMY_BAT = GAME().filehelper.load_file("scripts/definitions/objects/enemy/bat/bat_base.lua"),
+        ENEMY_SPIDER = GAME().filehelper.load_file("scripts/definitions/objects/enemy/spider/spider_base.lua"),
         BLOCK = {
             wall = true,
             init = function(self,x,y,params)
