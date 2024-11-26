@@ -135,11 +135,19 @@ render.update_sprite = function(sprite, holder, dt)
         local vx, vy = holder.phys.body:getLinearVelocity()
         sprite.x = holder.phys.body:getX() + vx / C_WORLD_METER_SCALE * dt
         sprite.y = holder.phys.body:getY() + vy / C_WORLD_METER_SCALE * dt
+        sprite.hurt_time = holder.hurt_time
+        sprite.health = holder.health
+        sprite.max_health = holder.max_health 
+        
+        if sprite.health and sprite.max_health and sprite.healthbar_dims then 
+            sprite.rendered_health = ((sprite.rendered_health or sprite.max_health) * 0.1 + sprite.health * dt) / (0.1 + dt)
+        end
     end
 
     if render.get_layer_state(layer) == true then 
         sprite.frame = sprite.frame + dt * C_TICKS_PER_SECOND
     end
+
 end
 
 render.update_mesh = function(sprite, holder, dt)
@@ -251,6 +259,14 @@ render.draw_sprite = function(sprite, frame_off, params)
 
     local frame, time, nframe, perc = render.get_interpolate_perc(sprite, frame_off + sprite.frame_off)
     local color = render.interpolate_color(sprite, frame_off + sprite.frame_off, params.color_mult, params.color_add)
+
+    -- flash red 
+    if (sprite.hurt_time or 0) > 0 then 
+        local hurt_time = math.min(255,sprite.hurt_time * 255 / C_RENDER_MAX_HURT_TIME)
+        local hurt_col = {r=255,g=255-hurt_time,b=255-hurt_time,a=255} 
+        color = render.apply_colors(color, hurt_col)       
+    end
+
     love.graphics.scale(C_RENDER_ROOT_SPRITE_SCALE)
     -- render.shader:send("mult_col",{color.r / 255 * params.color_mult.r / 255,color.g / 255 * params.color_mult.g / 255,color.b / 255 * params.color_mult.b / 255,color.a / 255 * params.color_mult.a / 255})
     -- render.shader:send("add_col",{params.color_add.r / 255,params.color_add.g / 255,params.color_add.b / 255,params.color_add.a / 255})
@@ -263,6 +279,24 @@ render.draw_sprite = function(sprite, frame_off, params)
         render.interpolate(sprite,"x_scale") * params.x_scale * (sprite.flipx and -1 or 1), 
         render.interpolate(sprite,"y_scale") * params.y_scale, 
         frame.x_pivot, frame.y_pivot)
+
+    -- render healthbar
+    if sprite.health and sprite.max_health and sprite.rendered_health and sprite.healthbar_dims and sprite.health < sprite.max_health then 
+        local hurt_time = math.min(255,(sprite.hurt_time or 0) * 255 / C_RENDER_MAX_HURT_TIME)
+        local dims = sprite.healthbar_dims
+        local perc = sprite.rendered_health / sprite.max_health 
+        local health_off = sprite.healthbar_offset == nil and {x=0,y=20} or sprite.healthbar_offset
+        love.graphics.setColor(C_RENDER_HEALTHBAR_BACK.r/255,C_RENDER_HEALTHBAR_BACK.g/255,C_RENDER_HEALTHBAR_BACK.b/255,C_RENDER_HEALTHBAR_BACK.a/255)
+        love.graphics.rectangle("fill",
+            (sprite.x+params.x+health_off.x)/C_RENDER_ROOT_SPRITE_SCALE-sprite.healthbar_dims.width/2.0,
+            (sprite.y+params.y+health_off.y)/C_RENDER_ROOT_SPRITE_SCALE-sprite.healthbar_dims.height/2.0,
+            sprite.healthbar_dims.width,sprite.healthbar_dims.height,1,1)
+        love.graphics.setColor(math.min(255,C_RENDER_HEALTHBAR_FRONT.r/255+hurt_time),math.max(0,C_RENDER_HEALTHBAR_FRONT.g-hurt_time)/255,math.max(C_RENDER_HEALTHBAR_FRONT.b-hurt_time)/255,C_RENDER_HEALTHBAR_FRONT.a/255)
+        love.graphics.rectangle("fill",
+            (sprite.x+params.x+health_off.x)/C_RENDER_ROOT_SPRITE_SCALE-sprite.healthbar_dims.width/2.0,
+            (sprite.y+params.y+health_off.y)/C_RENDER_ROOT_SPRITE_SCALE-sprite.healthbar_dims.height/2.0,
+            sprite.healthbar_dims.width*perc,sprite.healthbar_dims.height,1,1)
+end
 
     love.graphics.pop()
     love.graphics.setColor(1,1,1,1)
@@ -352,6 +386,30 @@ render.sprite_animation_finished = function(sprite)
     end
 
     return false 
+end
+
+render.get_sprite_event = function(sprite)
+    render.validate_sprite(sprite)
+    local fr = math.floor(sprite.frame)
+    local anim = sprite.anim_file
+    local events = anim.animations[sprite.cur_anim].events
+
+    if events then 
+        if events[fr] ~= nil and (sprite.event_frame or 0) ~= fr then 
+            sprite.event_frame = fr 
+            return events[fr]
+        end
+    else 
+        sprite.event_frame = fr 
+    end
+
+    return false 
+end
+
+render.start_animation = function(sprite, anim_name)
+    sprite.cur_anim = anim_name 
+    sprite.frame = 0
+    render.validate_sprite(sprite)
 end
 
 return render

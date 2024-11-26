@@ -5,7 +5,9 @@ return {
     entries = {
         PLAYER = GAME().filehelper.load_file("scripts/definitions/objects/player.lua"),
         BULLET = GAME().filehelper.load_file("scripts/definitions/objects/bullet.lua"),
+        ENEMY_BAT = GAME().filehelper.load_file("scripts/definitions/objects/enemy/bat/bat_base.lua"),
         BLOCK = {
+            wall = true,
             init = function(self,x,y,params)
                 self.width = params.width or 200
                 self.height = params.height or 50
@@ -29,6 +31,7 @@ return {
             end,
         },
         LIVE_BLOCK = {
+            wall = true,
             init = function(self,x,y,params)
                 self.width = params.width or 200
                 self.height = params.height or 50
@@ -56,54 +59,6 @@ return {
                 -- love.graphics.pop()
                 GAME().render.draw_mesh(self.mesh)
             end,
-        },
-        RAINDROP = {
-            contact_type = C_WORLD_CONTACT_TYPES.NONE,
-
-            init = function(self,x,y)
-                self.phys = GAME().physics.new_rectangle(self,x,y,25,25,C_PHYSICS_BODY_TYPES.DYNAMIC)
-            end,
-            update = function(self, dt, body)
-                -- body:applyForce(0,10)
-                local vp = GAME().camera.get_camera_viewport()
-
-                if body:getY() > vp.y+vp.height + 25 then 
-                    self.destroy = true 
-                end
-            end,
-            render = function(self, body) 
-                love.graphics.push()
-                local x,y = body:getPosition()
-                love.graphics.setColor(200,200,255,200)
-                love.graphics.translate(x,y)
-                love.graphics.rotate(body:getAngle())
-                love.graphics.ellipse("fill", -7.5, -12.5, 15, 25)
-                love.graphics.pop()
-            end,
-            on_collide = function(self, b_data, a, b, x, y, coll)
-                if b_data and b_data.id ~= "RAINMAKER" and b_data.id ~= "RAINDROP" then 
-                    self.destroy = true
-                else
-                    coll:setEnabled(false)
-                end
-            end,
-            should_collide = function(self, b_dt, a, b)
-                return b_dt.id ~= "RAINDROP" and b_dt.id ~= "RAINMAKER"
-            end
-        },
-        RAINMAKER = {
-            contact_type = C_WORLD_CONTACT_TYPES.NONE,
-            init = function(self,x,y)
-                self.phys = GAME().physics.new_rectangle(self,x,y,25,25,C_PHYSICS_BODY_TYPES.STATIC)
-            end,
-            update = function(self, dt, body) 
-                if self.util.is_tick(self, 10) then 
-                    GAME().physics.create_holder_from("RAINDROP",body:getX(),body:getY())
-                end
-
-                body:setX(400 + math.cos(self.time * 1.67) * 300)
-            end,
-            render = function(self, body) end,
         },
         EFFECT = {
             init = function(self,x,y,params)

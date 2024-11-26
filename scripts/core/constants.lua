@@ -43,6 +43,11 @@ C_RENDER_ROOT_SPRITE_SCALE = 2
 C_RENDER_ROOT_UI_SCALE = 2
 C_RENDER_TEXTURE_WRAPMODE = "repeat"
 
+-- health state rendering
+C_RENDER_MAX_HURT_TIME = 0.15
+C_RENDER_HEALTHBAR_BACK = {r=10,g=10,b=10,a=200}
+C_RENDER_HEALTHBAR_FRONT = {r=200,g=50,b=100,a=200}
+C_RENDER_HEALTHBAR_DIMS = {WIDTH=75,HEIGHT=12}
 
 -- default color when color is unspecified
 C_COLOR_WHITE = {r=255,g=255,b=255,a=255}
@@ -101,7 +106,10 @@ C_ADDITIONAL_GRAV_SCALAR = 0.25
 C_WORLD_CONTACT_TYPES = {
     ALL = 1, -- collides with everything
     DYNAMIC = 2, -- requires can_collide function in the physics object
-    NONE = 3 -- collides with no physics objects
+    NONE = 3, -- collides with no physics objects
+    NOT_SAME = 4, -- collides with objects with a different ID
+    NOT_IN_LIST = 5, -- collides with objects not in the required no_collide_list
+    ONLY_IN_LIST = 6, -- collides with objects in the required only_collide_list
 }
 
 C_REG_FOLDER = "scripts/definitions/registries/"
@@ -150,6 +158,8 @@ C_PLAYER_COUNTER_JUMP_FORCE = 250
 C_PLAYER_DOWN_STRENGTH = 10 * C_WORLD_METER_SCALE
 -- variance from 0 that is allowed for the x-collision vector
 C_PLAYER_GROUND_CONNECT_THRES = 0.5
+-- what % of C_WORLD_METER_SCALE should knockback be when firing
+C_PLAYER_KNOCKBACK_STRENGTH = 0.3
 
 C_CAMERA_MOVEMENT_TYPE = {
     NORMAL=1, -- follows player on delay

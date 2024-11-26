@@ -69,7 +69,9 @@ end
 
 util.get_angle_towards = function(x1,y1,x2,y2,deg)
     deg = deg == nil and false or deg
-    local ang = util.wrap_angle(math.atan2(x1-x2,y1-y2))
+    local ang = (util.wrap_angle(math.atan2(x1-x2,y1-y2)) - math.pi / 2.0)
+    if ang < 0 then ang = ang + math.pi * 2 end 
+    ang = ang % (math.pi * 2)
     return deg == true and math.deg(ang) or ang
 end
 
@@ -90,14 +92,12 @@ end
 
 util.wrap_angle = function(angle, degrees)
 	degrees = degrees == nil and false or degrees
-	if degrees then angle = angle / 180 * math.pi end
-
+	if degrees then return math.deg(util.wrap_angle(angle / 180 * math.pi,false)) end
 
 	if angle < 0 then return math.pi - math.abs(angle + math.pi) 
     else
 		return math.pi * 2 - angle
 	end
-    return angle
 end
 
 return util

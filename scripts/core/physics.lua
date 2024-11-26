@@ -105,10 +105,28 @@ physics.util = {
             end
     
             if body:getX() > viewport.x + viewport.width + width then 
-                body:setX(viewport.x - width )
+                body:setX(viewport.x - width)
             end    
         end
     end
 }
+
+physics.add_life_data = function(obj, max_health)
+    obj.health = max_health 
+    obj.max_health = max_health
+    obj.target = nil 
+end
+
+physics.set_target = function(obj)
+    obj.target = nil 
+
+    for _,player in ipairs(GAME().world.players) do 
+        local targ_dist = obj.target == nil and -1 or GAME().util.get_distance(obj.target.phys.body:getX(),obj.target.phys.body:getY(),obj.phys.body:getX(),obj.phys.body:getY())
+        local player_dist = GAME().util.get_distance(player.phys.body:getX(),player.phys.body:getY(),obj.phys.body:getX(),obj.phys.body:getY())
+        if obj.target == nil or targ_dist > player_dist then 
+            obj.target = player
+        end
+    end
+end
 
 return physics

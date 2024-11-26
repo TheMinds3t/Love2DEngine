@@ -137,7 +137,7 @@ function love.draw()
         end
     end
 
-    if main.world.players[1] then 
+    if main.world.players[1] and GAME().input.mouse_x and GAME().input.mouse_y then 
         local body = main.world.players[1].phys.body 
         local cam_pos = GAME().camera.get_position_in_cam(body:getX(),body:getY())
         local mouse_pos = GAME().camera.get_position_in_cam(GAME().input.mouse_x,GAME().input.mouse_y,true)

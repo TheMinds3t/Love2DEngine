@@ -1,5 +1,6 @@
 require("scripts.core.constants")
 local bullet = {
+    bullet = true,
     contact_type = C_WORLD_CONTACT_TYPES.DYNAMIC,
     create_params = function(params)
         params = params or {}
@@ -49,13 +50,15 @@ local bullet = {
     end,
     on_collide = function(self, b_data, a, b, x, y, coll)
         if b_data.bullet_collide then 
-            b_data.bullet_collide(self, b_data)
+            b_data.bullet_collide(b_data, self)
         end
 
         self.remove_bullet(self, a)
     end,
     should_collide = function(self, b_dt, a, b)
-        return b_dt.id ~= self.id and (self.params.source == nil or b_dt.index ~= self.params.source.index)
+        return b_dt.id ~= self.id and (b_dt.wall == true or self.params.source == nil or 
+            (b_dt.id == "PLAYER" and not self.params.source.is_player 
+                or b_dt.enemy == true and self.params.source.is_player ))
     end
 }
 

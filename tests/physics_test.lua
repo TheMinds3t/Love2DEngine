@@ -14,3 +14,9 @@ GAME().physics.create_holder_from("LIVE_BLOCK", 50, 450, {width=100,height=100,u
     body:setAngle(self.time)
     self.mesh.rot = math.deg(body:getAngle())
 end})
+
+GAME().physics.create_holder_from("ENEMY_BAT", 500, 0)
+GAME().physics.create_holder_from("ENEMY_BAT", 500, 0)
+GAME().physics.create_holder_from("ENEMY_BAT", 500, 0)
+GAME().physics.create_holder_from("ENEMY_BAT", 500, 0)
+GAME().physics.create_holder_from("ENEMY_BAT", 500, 0)

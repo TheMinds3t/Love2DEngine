@@ -86,6 +86,10 @@ cam.get_camera_viewport = function()
 end
 
 cam.get_position_in_cam = function(x_pos,y_pos,screen_space)
+    if x_pos == nil or y_pos == nil then 
+        return nil 
+    end
+    
     if cam.is_active() then 
         if screen_space then 
             local sx,sy,ox,oy = GAME().ui.get_window_scale()

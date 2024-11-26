@@ -32,9 +32,21 @@ world.contact_filter = function(a, b)
     if a_dt and b_dt then 
         if a_dt.contact_type == C_WORLD_CONTACT_TYPES.NONE or b_dt.contact_type == C_WORLD_CONTACT_TYPES.NONE then 
             return false 
+        elseif (a_dt.contact_type == C_WORLD_CONTACT_TYPES.NOT_SAME or b_dt.contact_type == C_WORLD_CONTACT_TYPES.NOT_SAME) and a_dt.id == b_dt.id then 
+            return false 
+        elseif (a_dt.contact_type == C_WORLD_CONTACT_TYPES.NOT_IN_LIST and a_dt.no_collide_list and a_dt.no_collide_list[b_dt.id] == true) 
+        or (b_dt.contact_type == C_WORLD_CONTACT_TYPES.NOT_IN_LIST and b_dt.no_collide_list and b_dt.no_collide_list[a_dt.id] == true) then 
+            return false 
+        elseif (a_dt.contact_type == C_WORLD_CONTACT_TYPES.ONLY_IN_LIST and a_dt.only_collide_list and a_dt.only_collide_list[b_dt.id] ~= true) 
+        or (b_dt.contact_type == C_WORLD_CONTACT_TYPES.ONLY_IN_LIST and b_dt.only_collide_list and b_dt.only_collide_list[a_dt.id] ~= true) then 
+            return false 
         else
-            local a_col = a_dt.contact_type == C_WORLD_CONTACT_TYPES.ALL or a_dt.should_collide and a_dt:should_collide(b_dt, a, b)
-            local b_col = b_dt.contact_type == C_WORLD_CONTACT_TYPES.ALL or b_dt.should_collide and b_dt:should_collide(a_dt, b, a)
+            local a_col = a_dt.contact_type == C_WORLD_CONTACT_TYPES.ALL 
+                or a_dt.should_collide and a_dt:should_collide(b_dt, a, b)
+                or a_dt.contact_type == C_WORLD_CONTACT_TYPES.ONLY_IN_LIST and a_dt.only_collide_list and a_dt.only_collide_list[b_dt.id]
+            local b_col = b_dt.contact_type == C_WORLD_CONTACT_TYPES.ALL 
+                or b_dt.should_collide and b_dt:should_collide(a_dt, b, a)
+                or b_dt.contact_type == C_WORLD_CONTACT_TYPES.ONLY_IN_LIST and b_dt.only_collide_list and b_dt.only_collide_list[a_dt.id]
             
             if a_dt.contact_type == C_WORLD_CONTACT_TYPES.DYNAMIC and a_col then 
                 return true 
@@ -94,6 +106,7 @@ world.base_object_update = function(data, dt, body)
         body:setInertia(0)
     end
 
+    data.hurt_time = math.max(0, (data.hurt_time or 0) - dt)
 
     return not data.destroy
 end
