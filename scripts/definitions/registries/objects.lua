@@ -6,6 +6,7 @@ return {
         PLAYER = GAME().filehelper.load_file("scripts/definitions/objects/player.lua"),
         BULLET = GAME().filehelper.load_file("scripts/definitions/objects/bullet.lua"),
         ENEMY_BAT = GAME().filehelper.load_file("scripts/definitions/objects/enemy/bat/bat_base.lua"),
+        ENEMY_BARTOX = GAME().filehelper.load_file("scripts/definitions/objects/enemy/bat/big_bat.lua"),
         ENEMY_SPIDER = GAME().filehelper.load_file("scripts/definitions/objects/enemy/spider/spider_base.lua"),
         BLOCK = {
             wall = true,
@@ -14,20 +15,13 @@ return {
                 self.height = params.height or 50
                 self.rot = params.rot or 0
                 self.phys = GAME().physics.new_rectangle(self,x,y,self.width,self.height,C_PHYSICS_BODY_TYPES.STATIC)
-                self.mesh = GAME().render.create_mesh("TILE_GRASS", self.width, self.height)
+                self.mesh = GAME().render.create_mesh("MESH_GRASS", self.width, self.height)
                 self.mesh.x = x 
                 self.mesh.y = y 
                 self.mesh.rot = self.rot
                 self.phys.body:setAngle(math.rad(self.rot))
             end,
             render = function(self, body) 
-                -- love.graphics.push()
-                -- local x,y = body:getPosition()
-                -- love.graphics.setColor(255,0,0,255)
-                -- love.graphics.translate(x,y)
-                -- love.graphics.rotate(body:getAngle())
-                -- love.graphics.rectangle("fill", -self.width / 2, -self.height / 2, self.width, self.height)
-                -- love.graphics.pop()
                 GAME().render.draw_mesh(self.mesh)
             end,
         },
@@ -37,7 +31,7 @@ return {
                 self.width = params.width or 200
                 self.height = params.height or 50
                 self.phys = GAME().physics.new_rectangle(self,x,y,self.width,self.height,C_PHYSICS_BODY_TYPES.STATIC)
-                self.mesh = GAME().render.create_mesh("TILE_GRASS", self.width, self.height)
+                self.mesh = GAME().render.create_mesh("MESH_GRASS", self.width, self.height)
                 self.mesh.x = x 
                 self.mesh.y = y 
                 self.update_logic = params.update or function(self,dt,body)
@@ -51,13 +45,6 @@ return {
                 end
             end,
             render = function(self, body) 
-                -- love.graphics.push()
-                -- local x,y = body:getPosition()
-                -- love.graphics.setColor(255,0,0,255)
-                -- love.graphics.translate(x,y)
-                -- love.graphics.rotate(body:getAngle())
-                -- love.graphics.rectangle("fill", -self.width / 2, -self.height / 2, self.width, self.height)
-                -- love.graphics.pop()
                 GAME().render.draw_mesh(self.mesh)
             end,
         },

@@ -104,8 +104,20 @@ local player = {
         GAME().render.draw_sprite(self.sprite,0)
         -- GAME().render.draw_sprite(self.sprite,0,{color_add=GAME().util.rainbow_color(self.time,0,5)})
     end,
-    bullet_collide = function(self, b_data)
+    bullet_collide = function(self, b_data, x, y)
         self.hurt_time = C_RENDER_MAX_HURT_TIME * 2
+        
+        self.next_tick = function() 
+            GAME().physics.create_holder_from("EFFECT",
+            b_data.x,
+            b_data.y,
+            {
+                sprite="FX_BLOOD_EXPLODE",
+                anim_name="explode_tiny", 
+                angle = b_data.params.angle,
+                velocity = -3
+            })
+        end
     end,
     on_collide = function(self, b_data, a, b, x, y, coll)
         if y > 0 and math.abs(x) <= C_PLAYER_GROUND_CONNECT_THRES and b_data.wall == true then -- bottom face collided

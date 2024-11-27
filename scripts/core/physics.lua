@@ -52,6 +52,9 @@ physics.create_holder_from = function(entry,x,y,params)
     new_obj.id = entry 
     new_obj.contact_type = new_obj.contact_type == nil and C_WORLD_CONTACT_TYPES.ALL or new_obj.contact_type
     new_obj.index = GAME().world.get_ent_index()
+    new_obj.x = x
+    new_obj.y = y
+    new_obj.last_tick_state = {}
     
     if new_obj.phys then 
         new_obj.phys.fixture:setCategory(new_obj.contact_type)
@@ -76,11 +79,11 @@ physics.util = {
     is_tick = function(self, tick, off)
         off = off == nil and 0 or off 
 
-        if (self.ticks + off) % tick == 0 and (self.last_tick_state or 0) ~= self.ticks then
-            self.last_tick_state = self.ticks  
+        if (self.ticks + off) % tick == 0 and (self.last_tick_state[tick] or 0) ~= self.ticks then
+            self.last_tick_state[tick] = self.ticks  
             return true
         elseif (self.ticks + off) % tick ~= 0 then 
-            self.last_tick_state = 0
+            self.last_tick_state[tick] = 0
         end
 
         return false 

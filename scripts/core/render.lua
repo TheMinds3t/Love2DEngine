@@ -64,6 +64,13 @@ render.flush_anim_file = function(anim_obj)
                     frame.dimensions.w, frame.dimensions.h, 
                     frame.image:getPixelWidth(), frame.image:getPixelHeight())
 
+                if not frame.color.r or not frame.color.g or not frame.color.b or not frame.color.a then 
+                    frame.color.r = frame.color.r or 255
+                    frame.color.g = frame.color.g or 255
+                    frame.color.b = frame.color.b or 255
+                    frame.color.a = frame.color.a or 255
+                end
+
                 max_frame_time = max_frame_time + frame.frames
             end
 
@@ -92,6 +99,7 @@ render.create_sprite = function(reg_id)
     sprite.x = 0
     sprite.y = 0
     sprite.rot = 0
+    sprite.event_frame = {}
 
     return sprite
 end
@@ -129,8 +137,6 @@ render.update_sprite = function(sprite, holder, dt)
         return 
     end
 
-    local layer = sprite.anim_file.animations[sprite.cur_anim].anim_layer 
-
     if holder then 
         local vx, vy = holder.phys.body:getLinearVelocity()
         sprite.x = holder.phys.body:getX() + vx / C_WORLD_METER_SCALE * dt
@@ -144,14 +150,24 @@ render.update_sprite = function(sprite, holder, dt)
         end
     end
 
+    local layer = sprite.anim_file.animations[sprite.cur_anim].anim_layer 
+
     if render.get_layer_state(layer) == true then 
         sprite.frame = sprite.frame + dt * C_TICKS_PER_SECOND
     end
 
 end
 
-render.update_mesh = function(sprite, holder, dt)
+render.update_mesh = function(mesh, holder, dt)
+    if holder then 
+        local vx, vy = holder.phys.body:getLinearVelocity()
+        mesh.x = (holder.phys.body:getX() + (mesh.off_x or 0)) + vx / C_WORLD_METER_SCALE * dt
+        mesh.y = (holder.phys.body:getY() + (mesh.off_y or 0)) + vy / C_WORLD_METER_SCALE * dt
 
+        if holder.sprite then 
+            mesh.hurt_time = holder.sprite.hurt_time
+        end
+    end
 end
 
 -- sprite: userdata from render.create_sprite
@@ -174,10 +190,18 @@ render.draw_mesh = function(mesh, params)
     params.color = params.color == nil and C_COLOR_WHITE or params.color
     params.color_mult = params.color_mult == nil and C_COLOR_WHITE or params.color_mult
     params.color_add = params.color_add == nil and C_COLOR_EMPTY or params.color_add
+
     love.graphics.push()
     love.graphics.scale(C_RENDER_ROOT_SPRITE_SCALE)
 
     local color = render.apply_colors(params.color, params.color_mult, params.color_add)
+    -- flash red 
+    if (mesh.hurt_time or 0) > 0 then 
+        local hurt_time = math.min(255,mesh.hurt_time * 255 / C_RENDER_MAX_HURT_TIME)
+        local hurt_col = {r=255,g=255-hurt_time,b=255-hurt_time,a=255} 
+        color = render.apply_colors(color, hurt_col)       
+    end
+
     love.graphics.setColor(color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0)
     love.graphics.draw(mesh.mesh, mesh.x / C_RENDER_ROOT_SPRITE_SCALE + params.x, mesh.y / C_RENDER_ROOT_SPRITE_SCALE + params.y, math.rad(params.rot + mesh.rot), params.x_scale, params.y_scale, mesh.width / 2.0, mesh.height / 2.0)
     love.graphics.pop()
@@ -388,19 +412,28 @@ render.sprite_animation_finished = function(sprite)
     return false 
 end
 
-render.get_sprite_event = function(sprite)
+render.sprite_event_triggered = function(sprite, event)
     render.validate_sprite(sprite)
-    local fr = math.floor(sprite.frame)
-    local anim = sprite.anim_file
-    local events = anim.animations[sprite.cur_anim].events
+    local cur_frame = math.floor(sprite.frame)
+    local anim = sprite.anim_file.animations[sprite.cur_anim]
+    
+    if anim.no_loop ~= true then 
+        cur_frame = cur_frame % anim.frame_time
+    else
+        cur_frame = math.min(cur_frame, anim.frame_time + 1)
+    end
+
+    local events = anim.events
 
     if events then 
-        if events[fr] ~= nil and (sprite.event_frame or 0) ~= fr then 
-            sprite.event_frame = fr 
-            return events[fr]
+        if events[cur_frame] == event and (sprite.event_frame[event] or 0) ~= cur_frame then 
+            sprite.event_frame[event] = cur_frame 
+            return true
+        elseif events[cur_frame] ~= event then 
+            sprite.event_frame[event] = 0 
         end
     else 
-        sprite.event_frame = fr 
+        sprite.event_frame[event] = 0 
     end
 
     return false 

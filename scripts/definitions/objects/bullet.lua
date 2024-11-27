@@ -11,6 +11,7 @@ local bullet = {
         params.fx_vel_scale = params.fx_vel_scale == nil and 0.0 or params.fx_vel_scale
         params.mass = params.mass == nil and 0.1 or params.mass
         params.wall_collide = params.wall_collide == nil and true or params.wall_collide
+        params.die_with_source = params.die_with_source == nil and true or params.die_with_source
         return params 
     end,
     init = function(self,x,y,params)
@@ -22,18 +23,6 @@ local bullet = {
         self.sprite = GAME().render.create_sprite(params.sprite)
         GAME().render.update_sprite(self.sprite, self, 0)
     end,
-    remove_bullet = function(self,body)
-        self.next_tick = function() 
-            GAME().physics.create_holder_from("EFFECT",body:getX(),body:getY(),
-                {
-                    sprite=self.params.sprite, 
-                    angle=self.params.angle, 
-                    velocity=self.params.velocity*self.params.fx_vel_scale
-                })
-
-            self.destroy = true 
-        end
-    end,
     update = function(self, dt, body)
         local move_scale = 1
         GAME().render.update_sprite(self.sprite, self, dt)
@@ -43,8 +32,8 @@ local bullet = {
             math.cos(math.rad(self.params.angle)) * self.params.velocity * C_WORLD_METER_SCALE, 
             math.sin(math.rad(self.params.angle)) * self.params.velocity * C_WORLD_METER_SCALE)
 
-        if self.time > self.params.lifetime then 
-            self.remove_bullet(self, body)
+        if self.time > self.params.lifetime or (self.params.source ~= nil and self.params.source.destroy == true and self.params.die_with_source == true) then 
+            self.destroy = true 
         end
 
         if self.params.update ~= nil then 
@@ -57,16 +46,24 @@ local bullet = {
     end,
     on_collide = function(self, b_data, a, b, x, y, coll)
         if b_data.bullet_collide then 
-            b_data.bullet_collide(b_data, self)
+            b_data.bullet_collide(b_data, self, x, y)
         end
 
-        self.remove_bullet(self, a)
+        self.destroy = true
     end,
     should_collide = function(self, b_dt, a, b)
         return b_dt.id ~= self.id and (b_dt.wall == true and self.params.wall_collide == true 
             or self.params.source == nil or 
             (b_dt.id == "PLAYER" and not self.params.source.is_player 
                 or b_dt.enemy == true and self.params.source.is_player ))
+    end,
+    on_remove = function(self,body)
+        GAME().physics.create_holder_from("EFFECT",body:getX(),body:getY(),
+        {
+            sprite=self.params.sprite, 
+            angle=self.params.angle, 
+            velocity=self.params.velocity*self.params.fx_vel_scale
+        })
     end
 }
 

@@ -20,6 +20,7 @@ main.registry = require("scripts.core.registry")
 main.input = require("scripts.core.input")
 main.ui = require("scripts.core.ui")
 main.camera = require("scripts.core.camera")
+main.audio = require("scripts.core.audio")
 
 -- init order
 main.core = {
@@ -33,7 +34,8 @@ main.core = {
     main.world,
     main.input,
     main.ui,
-    main.camera
+    main.camera,
+    main.audio
 }
 
 -- shortcut
@@ -65,6 +67,7 @@ local frame_delta = 1.0 / C_TICKS_PER_SECOND
 
 function love.update(dt)
     main.threads.update()
+    main.audio.update(dt)
 
     -- if cur_dt < frame_delta * 2 then 
     if dt < C_MAX_DELTA_ALLOWED then

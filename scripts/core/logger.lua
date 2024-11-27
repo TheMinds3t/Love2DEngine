@@ -6,7 +6,8 @@ logger.cur_level = C_LOGGER_LEVELS.INFO
 logger.log = function(msg, level)
     level = level == nil and C_LOGGER_LEVELS.NORMAL or level
     local caller_info = debug.getinfo(2, "Sl")
-    insert(logger.cur_log, "["..#logger.cur_log.."]["..caller_info.short_src..":"..caller_info.linedefined.."] "..tostring(msg))
+    local prefix = C_LOGGER_LEVEL_PREFIXES[level] or ""
+    insert(logger.cur_log, "["..#logger.cur_log.."]["..caller_info.short_src..":"..caller_info.linedefined.."] "..prefix..tostring(msg))
 
     if logger.cur_level >= level then 
         print(logger.cur_log[#logger.cur_log])

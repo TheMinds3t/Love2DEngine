@@ -10,7 +10,8 @@ world.add_player = function(player_obj)
     end
 end
 
-world.start_world = function()
+world.start_world = function(seed)
+    seed = seed == nil and os.clock()
     if world.cur_world ~= nil then 
         world.cur_world:destroy()
     end
@@ -18,8 +19,15 @@ world.start_world = function()
     world.cur_world = love.physics.newWorld(C_WORLD_GRAVITY.X * C_WORLD_METER_SCALE, C_WORLD_GRAVITY.Y * C_WORLD_METER_SCALE, true)
     world.cur_world:setCallbacks(world.contact_start, world.contact_end, world.pre_solve_contact, world.post_solve_contact)
     world.cur_world:setContactFilter(world.contact_filter)
-    world.world_seed = love.timer.getTime()
+    world.world_seed = seed
     world.cur_ent_index = 1
+    world.random_gen = love.math.newRandomGenerator(seed)
+end
+
+world.rand = function()
+    if world.cur_world ~= nil then 
+        return world.random_gen
+    end
 end
 
 world.get_ent_index = function()
@@ -107,6 +115,8 @@ world.base_object_update = function(data, dt, body)
     end
 
     data.hurt_time = math.max(0, (data.hurt_time or 0) - dt)
+    data.x = body:getX()
+    data.y = body:getY()
 
     return not data.destroy
 end
@@ -119,6 +129,8 @@ world.update = function(dt)
 
             if data then 
                 if not world.base_object_update(data, dt * C_WORLD_UPDATE_SCALAR, body) then 
+                    if data.on_remove ~= nil then data.on_remove(data, body) end 
+
                     data.phys.fixture:destroy()
                     data.phys.body:destroy()
                     GAME().log("Removed object \'"..data.id.."\' from world. #bodies = "..tostring(#bodies), C_LOGGER_LEVELS.DEBUG)
