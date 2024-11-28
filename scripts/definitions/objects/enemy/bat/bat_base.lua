@@ -26,6 +26,7 @@ local bat = {
 
     death_fx = {sprite="FX_BLOOD_EXPLODE", anim_name="explode"},
     size = {width=22,height=50},
+    activate_range = C_LEVEL_TILE_SIZE * 25,
 
     position_offset = function(self, dt, body) 
         return {
@@ -65,6 +66,7 @@ local bat = {
         GAME().physics.add_life_data(self, params.health)
         self.sprite = GAME().render.create_sprite(self.params.sprite)
         GAME().render.update_sprite(self.sprite, self, 0)
+        self.active = false 
     end,
     update = function(self, dt, body)
         if self.util.is_tick(self, 60, self.index * 4) then 
@@ -77,34 +79,48 @@ local bat = {
             GAME().audio.play("FLAP",0.5,1.5)
         end
 
-        if self.target ~= nil then 
-            self.target_time = (self.target_time or 0) + dt
-            local off = self.params.pos_offset(self, dt, body)
-            self.cur_off_x = ((self.cur_off_x or body:getX()) * self.off_update_dampener + (self.target.phys.body:getX() + off.x) * dt) / (self.off_update_dampener + dt)
-            self.cur_off_y = ((self.cur_off_y or body:getY()) * self.off_update_dampener + (self.target.phys.body:getY() + off.y) * dt) / (self.off_update_dampener + dt)
-
-            self.sprite.flipx = body:getX() < self.target.phys.body:getX()
-
-            local dist = GAME().util.get_distance(
-                body:getX(), body:getY(),
-                self.cur_off_x,
-                self.cur_off_y)
-            local ang = GAME().util.get_angle_towards(
-                body:getX(), body:getY(),
-                self.cur_off_x,
-                self.cur_off_y)
-
-            local spd = math.min(self.max_move_speed * C_WORLD_METER_SCALE, dist * self.params.speed)
-            
-            if self.util.is_tick(self, math.min(self.min_attack_time, self.max_attack_time - math.floor(self.target_time * 6)), self.index * 5) and self.attack_anim ~= self.idle_anim then 
-                GAME().render.start_animation(self.sprite,self.attack_anim)
+        if self.target then
+            if self.active then 
+                self.target_time = (self.target_time or 0) + dt
+                local off = self.params.pos_offset(self, dt, body)
+                self.cur_off_x = ((self.cur_off_x or body:getX()) * self.off_update_dampener + (self.target.phys.body:getX() + off.x) * dt) / (self.off_update_dampener + dt)
+                self.cur_off_y = ((self.cur_off_y or body:getY()) * self.off_update_dampener + (self.target.phys.body:getY() + off.y) * dt) / (self.off_update_dampener + dt)
+    
+                self.sprite.flipx = body:getX() < self.target.phys.body:getX()
+    
+                local dist = GAME().util.get_distance(
+                    body:getX(), body:getY(),
+                    self.cur_off_x,
+                    self.cur_off_y)
+                local ang = GAME().util.get_angle_towards(
+                    body:getX(), body:getY(),
+                    self.cur_off_x,
+                    self.cur_off_y)
+    
+                local spd = math.min(self.max_move_speed * C_WORLD_METER_SCALE, dist * self.params.speed)
+                
+                if self.util.is_tick(self, math.min(self.min_attack_time, self.max_attack_time - math.floor(self.target_time * 6)), self.index * 5)
+                    and self.attack_anim ~= self.idle_anim
+                    and self.sprite.cur_anim == self.idle_anim then 
+                    
+                    GAME().render.start_animation(self.sprite,self.attack_anim)
+                end
+    
+                if GAME().render.sprite_event_triggered(self.sprite, "fire") and self.sprite.cur_anim == "attack" then 
+                    self.params.fire(self,dt,body)
+                end
+    
+                body:setLinearVelocity(math.cos(ang) * spd, math.sin(ang) * spd)    
+            elseif self.util.is_tick(self, C_PHYSICS_ACTIVATE_RAYCHECK_FREQUENCY) then  
+                self.hits = GAME().world.raycast(body,GAME().util.get_angle_towards(self.x,self.y,self.target.x,self.target.y), self.activate_range)
+                
+                if #self.hits >= 1 then
+                    if self.hits[1].object.index == self.target.index then 
+                        self.active = true 
+                        self.hits = {}    
+                    end
+                end
             end
-
-            if GAME().render.sprite_event_triggered(self.sprite, "fire") and self.sprite.cur_anim == "attack" then 
-                self.params.fire(self,dt,body)
-            end
-
-            body:setLinearVelocity(math.cos(ang) * spd, math.sin(ang) * spd)
         else 
             self.target_time = 0
         end
@@ -139,7 +155,16 @@ local bat = {
     end,
     render = function(self, body)
         GAME().render.draw_sprite(self.sprite)
-
+        -- Drawing the intersection points and normal vectors if there were any.
+        -- if self.hits then 
+        --     for i, hit in ipairs(self.hits) do
+        --         love.graphics.setColor(1, 0, 0)
+        --         love.graphics.print(i, hit.x, hit.y) -- Prints the hit order besides the point.
+        --         love.graphics.circle("line", hit.x, hit.y, 3)
+        --         love.graphics.setColor(0, 1, 0)
+        --         love.graphics.line(hit.x, hit.y, hit.x + hit.xn * 25, hit.y + hit.yn * 25)
+        --     end    
+        -- end
         -- if self.target then 
         --     local off = self.params.pos_offset(self, dt, body)
 

@@ -21,6 +21,7 @@ main.input = require("scripts.core.input")
 main.ui = require("scripts.core.ui")
 main.camera = require("scripts.core.camera")
 main.audio = require("scripts.core.audio")
+main.levelgen = require("scripts.core.levelgen")
 
 -- init order
 main.core = {
@@ -35,7 +36,8 @@ main.core = {
     main.input,
     main.ui,
     main.camera,
-    main.audio
+    main.audio,
+    main.levelgen
 }
 
 -- shortcut
@@ -54,7 +56,8 @@ function love.load(args)
     main.core = nil
 
     -- main.filehelper.load_file("tests/file_io_test.lua")
-    main.filehelper.load_file("tests/physics_test.lua")
+    main.filehelper.load_file("tests/world_level_test.lua")
+    -- main.filehelper.load_file("tests/physics_test.lua")
     -- main.filehelper.load_file("tests/threads_test.lua")
 end
 

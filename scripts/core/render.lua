@@ -95,16 +95,21 @@ render.create_sprite = function(reg_id)
     sprite.anim_file = render.flush_anim_file(GAME().registry.get_registry_object(C_REG_TYPES.ANIM_FILE, sprite.anim_file))
     sprite.cur_anim = sprite.default_anim
     sprite.frame = 1
+    sprite.anim_speed = 1.0
     sprite.frame_off = 0
     sprite.x = 0
     sprite.y = 0
+    sprite.off_x = sprite.off_x == nil and 0 or sprite.off_x
+    sprite.off_y = sprite.off_y == nil and 0 or sprite.off_y
     sprite.rot = 0
     sprite.event_frame = {}
 
     return sprite
 end
 
-render.create_mesh = function(img_id,w,h)
+render.create_mesh = function(img_id,w,h,off_x,off_y)
+    off_x = off_x == nil and 0 or off_x
+    off_y = off_y == nil and 0 or off_y
     local img = GAME().registry.get_registry_object(C_REG_TYPES.IMAGE, img_id)
     local mesh = {}
     mesh.x = 0
@@ -113,14 +118,18 @@ render.create_mesh = function(img_id,w,h)
     mesh.height = h / C_RENDER_ROOT_SPRITE_SCALE
     mesh.rot = 0
     mesh.meshed = true 
+    mesh.visible = true
     local u_width = w / img:getPixelWidth() / C_RENDER_ROOT_SPRITE_SCALE
     local v_width = h / img:getPixelHeight() / C_RENDER_ROOT_SPRITE_SCALE
 
+    local u_off_x = off_x / img:getPixelWidth() / C_RENDER_ROOT_SPRITE_SCALE
+    local v_off_y = off_y / img:getPixelHeight() / C_RENDER_ROOT_SPRITE_SCALE
+
     local points = {
-        {0,0,0,0},
-        {w / C_RENDER_ROOT_SPRITE_SCALE,0,u_width,0},
-        {w / C_RENDER_ROOT_SPRITE_SCALE,h / C_RENDER_ROOT_SPRITE_SCALE,u_width,v_width},
-        {0,h / C_RENDER_ROOT_SPRITE_SCALE,0,v_width},
+        {0,0,u_off_x,v_off_y},
+        {w / C_RENDER_ROOT_SPRITE_SCALE,0,u_off_x+u_width,v_off_y},
+        {w / C_RENDER_ROOT_SPRITE_SCALE,h / C_RENDER_ROOT_SPRITE_SCALE,u_off_x+u_width,v_off_y+v_width},
+        {0,h / C_RENDER_ROOT_SPRITE_SCALE,u_off_x,v_off_y+v_width},
     }
 
     mesh.mesh = love.graphics.newMesh(points,"fan","dynamic")
@@ -153,9 +162,8 @@ render.update_sprite = function(sprite, holder, dt)
     local layer = sprite.anim_file.animations[sprite.cur_anim].anim_layer 
 
     if render.get_layer_state(layer) == true then 
-        sprite.frame = sprite.frame + dt * C_TICKS_PER_SECOND
+        sprite.frame = sprite.frame + dt * C_TICKS_PER_SECOND * sprite.anim_speed
     end
-
 end
 
 render.update_mesh = function(mesh, holder, dt)
@@ -190,6 +198,10 @@ render.draw_mesh = function(mesh, params)
     params.color = params.color == nil and C_COLOR_WHITE or params.color
     params.color_mult = params.color_mult == nil and C_COLOR_WHITE or params.color_mult
     params.color_add = params.color_add == nil and C_COLOR_EMPTY or params.color_add
+
+    if mesh.visible == false then 
+        return  
+    end
 
     love.graphics.push()
     love.graphics.scale(C_RENDER_ROOT_SPRITE_SCALE)
@@ -268,7 +280,7 @@ render.draw_sprite = function(sprite, frame_off, params)
     params.color_mult = params.color_mult == nil and C_COLOR_WHITE or params.color_mult
     params.color_add = params.color_add == nil and C_COLOR_EMPTY or params.color_add
 
-    if not render.validate_sprite(sprite) then 
+    if not render.validate_sprite(sprite) or sprite.visible == false then 
         return
     end
     
@@ -297,8 +309,8 @@ render.draw_sprite = function(sprite, frame_off, params)
     love.graphics.setColor(color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0)
 
     love.graphics.draw(frame.image, frame.dimensions, 
-        (sprite.x+render.interpolate(sprite,"x_pos")+params.x) / C_RENDER_ROOT_SPRITE_SCALE, 
-        (sprite.y+render.interpolate(sprite,"y_pos")+params.y) / C_RENDER_ROOT_SPRITE_SCALE, 
+        (sprite.x+sprite.off_x+render.interpolate(sprite,"x_pos")+params.x) / C_RENDER_ROOT_SPRITE_SCALE, 
+        (sprite.y+sprite.off_y+render.interpolate(sprite,"y_pos")+params.y) / C_RENDER_ROOT_SPRITE_SCALE, 
         math.rad(render.interpolate(sprite,"rotate") + params.rot + sprite.rot), 
         render.interpolate(sprite,"x_scale") * params.x_scale * (sprite.flipx and -1 or 1), 
         render.interpolate(sprite,"y_scale") * params.y_scale, 

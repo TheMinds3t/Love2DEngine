@@ -6,7 +6,8 @@ return {
             anim_file = "ENEMY_BAT",
             default_anim = "fly",
             healthbar_offset = {x=0,y=40},
-            healthbar_dims = {width=32,height=3}
+            healthbar_dims = {width=32,height=3},
+            off_y = -8
         },
         ENEMY_BARTOX = {
             anim_file = "ENEMY_BARTOX",

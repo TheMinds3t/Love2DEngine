@@ -23,6 +23,7 @@ util.deep_copy = function(obj, seen)
     for k, v in pairs(obj) do res[util.deep_copy(k, s)] = util.deep_copy(v, s) end
     return res
 end
+
 -- 27.3 (56 / 205)
 util.interpolate_color = function(cola, colb, perc)
     return {

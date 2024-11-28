@@ -2,6 +2,7 @@ require("scripts.core.constants")
 local world = {}
 
 world.players = {}
+world.draw_writeframe = false
 
 world.add_player = function(player_obj)
     if world.cur_world ~= nil and player_obj.world_seed ~= world.world_seed then 
@@ -22,6 +23,8 @@ world.start_world = function(seed)
     world.world_seed = seed
     world.cur_ent_index = 1
     world.random_gen = love.math.newRandomGenerator(seed)
+
+    return world 
 end
 
 world.rand = function()
@@ -33,6 +36,38 @@ end
 world.get_ent_index = function()
     world.cur_ent_index = world.cur_ent_index + 1
     return world.cur_ent_index - 1
+end
+
+world.raycast = function(body, angle, dist)
+    if not world.is_active() then return {} end 
+
+    local data = body:getUserData()
+
+    local hits = {}
+
+    world.cur_world:rayCast(
+        body:getX(),body:getY(),
+        body:getX()+math.cos(angle)*dist,
+        body:getY()+math.sin(angle)*dist,
+    
+        function(fixture, x, y, xn, yn, fraction)
+            local hit = {}
+            hit.fixture = fixture
+            hit.x, hit.y = x, y
+            hit.xn, hit.yn = xn, yn
+            hit.fraction = fraction
+            hit.object = fixture:getUserData()
+
+            table.insert(hits, hit)
+
+            return 1 -- Continues with ray cast through all shapes.
+        end)
+
+    table.sort(hits,function(a,b)
+        return GAME().util.get_distance(body:getX(),body:getY(),a.object.x,a.object.y) < GAME().util.get_distance(body:getX(),body:getY(),b.object.x,b.object.y)
+    end)
+
+    return hits 
 end
 
 world.contact_filter = function(a, b)
@@ -156,6 +191,25 @@ world.render = function()
             if dt and dt.render then 
                 dt:render(body)
             end
+        end
+
+        if world.draw_writeframe == true then 
+            love.graphics.push()
+            love.graphics.setColor(1,0,0,1)
+            for _,body in ipairs(world.cur_world:getBodies()) do 
+                local dt = body:getUserData() 
+
+                if dt and dt.phys.shape and dt.width and dt.height then 
+                    love.graphics.push()
+                    local x,y = body:getPosition()
+                    love.graphics.translate(x,y)
+                    love.graphics.rotate(body:getAngle())
+                    love.graphics.rectangle("line", -dt.width / 2, -dt.height / 2, dt.width, dt.height)
+                    love.graphics.pop()
+                end
+            end 
+
+            love.graphics.pop()
         end
     end
 end

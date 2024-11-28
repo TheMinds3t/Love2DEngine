@@ -15,7 +15,7 @@ return {
                 self.height = params.height or 50
                 self.rot = params.rot or 0
                 self.phys = GAME().physics.new_rectangle(self,x,y,self.width,self.height,C_PHYSICS_BODY_TYPES.STATIC)
-                self.mesh = GAME().render.create_mesh("MESH_GRASS", self.width, self.height)
+                self.mesh = GAME().render.create_mesh("MESH_GRASS", self.width, self.height, x % 32, y % 32)
                 self.mesh.x = x 
                 self.mesh.y = y 
                 self.mesh.rot = self.rot
@@ -31,7 +31,7 @@ return {
                 self.width = params.width or 200
                 self.height = params.height or 50
                 self.phys = GAME().physics.new_rectangle(self,x,y,self.width,self.height,C_PHYSICS_BODY_TYPES.STATIC)
-                self.mesh = GAME().render.create_mesh("MESH_GRASS", self.width, self.height)
+                self.mesh = GAME().render.create_mesh("MESH_GRASS", self.width, self.height, x, y)
                 self.mesh.x = x 
                 self.mesh.y = y 
                 self.update_logic = params.update or function(self,dt,body)
@@ -46,6 +46,8 @@ return {
             end,
             render = function(self, body) 
                 GAME().render.draw_mesh(self.mesh)
+                
+
             end,
         },
         EFFECT = {

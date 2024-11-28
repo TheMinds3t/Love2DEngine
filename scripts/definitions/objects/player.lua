@@ -2,7 +2,7 @@ require("scripts.core.constants")
 local player = {
     is_player = true,
     init = function(self,x,y,params)
-        self.phys = GAME().physics.new_rectangle(self,x,y,25,50,C_PHYSICS_BODY_TYPES.DYNAMIC)
+        self.phys = GAME().physics.new_rectangle(self,x,y,25,38,C_PHYSICS_BODY_TYPES.DYNAMIC)
         self.phys.body:setFixedRotation(true)
 
         self.sprite = GAME().render.create_sprite("ENEMY_BAT")
@@ -97,7 +97,7 @@ local player = {
             -- self.knockback_time = 0.2
         end
 
-        self.util.wrap_screen(self, body)
+        -- self.util.wrap_screen(self, body)
     end,
     render = function(self, body) 
         self.time = self.time or 0
@@ -120,7 +120,7 @@ local player = {
         end
     end,
     on_collide = function(self, b_data, a, b, x, y, coll)
-        if y > 0 and math.abs(x) <= C_PLAYER_GROUND_CONNECT_THRES and b_data.wall == true then -- bottom face collided
+        if math.abs(x) <= C_PLAYER_GROUND_CONNECT_THRES and b_data.wall == true then -- bottom face collided
             self.airborne = false 
             self.grounded = true 
             self.jump_time = 0    

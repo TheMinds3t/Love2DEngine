@@ -6,7 +6,7 @@ bat.attack_anim = "fly"
 bat.sprite = "ENEMY_BARTOX"
 bat.move_speed = 8
 bat.size = {width=80,height=80}
-bat.max_health = 50
+bat.max_health = 5
 bat.charge_time = 3.0
 bat.charge_dist = 300
 bat.charge_tell_time = 1.0

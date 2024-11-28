@@ -55,6 +55,7 @@ physics.create_holder_from = function(entry,x,y,params)
     new_obj.x = x
     new_obj.y = y
     new_obj.last_tick_state = {}
+    new_obj.active = true 
     
     if new_obj.phys then 
         new_obj.phys.fixture:setCategory(new_obj.contact_type)

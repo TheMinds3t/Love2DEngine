@@ -18,7 +18,7 @@ audio.play = function(sfx_id, vol, pitch)
             active.source:setVolume(active.volume)
 
             local slot = audio.get_sfx_slot()
-            GAME().log("slot="..slot)
+            audio.unload_slot(slot)
             audio.active_sounds[slot] = active
             love.audio.play(active.source)
             GAME().log("Played sound \'"..sfx_id.."\' (volume="..active.volume..",pitch="..active.pitch..")", C_LOGGER_LEVELS.INFO)
@@ -45,9 +45,15 @@ audio.update = function(dt)
     for i=C_AUDIO_MAX_SFX_SOURCES,1,-1 do 
         local sfx = audio.active_sounds[i]
         if sfx ~= nil and not sfx.source:isPlaying() then 
-            sfx.source:release()
-            audio.active_sounds[i] = nil 
+            audio.unload_slot(i)
         end
+    end
+end
+
+audio.unload_slot = function(slot)
+    if audio.active_sounds[slot] then 
+        audio.active_sounds[slot].source:release()
+        audio.active_sounds[slot] = nil     
     end
 end
 

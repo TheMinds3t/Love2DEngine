@@ -107,10 +107,12 @@ filehelper.write_file = function(filename, write_func, encrypted)
         GAME().log(error)
         return ok, error 
     else
-        local lines = write_func()
+        local lines = write_func(file)
 
-        for _,line in ipairs(lines) do 
-            file:write((encrypted == true and encrypt_func(line) or line).."\n")
+        if lines then 
+            for _,line in ipairs(lines) do 
+                file:write((encrypted == true and encrypt_func(line) or line).."\n")
+            end    
         end
     
         file:close()    
